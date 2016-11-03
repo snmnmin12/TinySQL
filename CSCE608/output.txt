@@ -1,0 +1,967 @@
+CREATE TABLE course (sid INT, homework INT, project INT, exam INT, grade STR20)
+Statements: [CREATE, TABLE, course]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: [INT, INT, INT, INT, STR20]
+Values: []
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (1, 99, 100, 100, "A")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [1, 99, 100, 100, A]
+
+
+SELECT * FROM course
+Statements: [SELECT, FROM, course]
+Attributes: []
+FieldTypes: []
+Values: []
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (2, NULL, 100, 100, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [2, NULL, 100, 100, E]
+
+
+SELECT * FROM course
+Statements: [SELECT, FROM, course]
+Attributes: []
+FieldTypes: []
+Values: []
+
+
+INSERT INTO course (sid, grade, exam, project, homework) VALUES (3, "E", 100, 100, 100)
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, grade, exam, project, homework]
+FieldTypes: []
+Values: [3, E, 100, 100, 100]
+
+
+SELECT * FROM course
+Statements: [SELECT, FROM, course]
+Attributes: []
+FieldTypes: []
+Values: []
+
+
+INSERT INTO course (sid, homework, project, exam, grade) SELECT * FROM course
+Statements: [INSERT, INTO, course, SELECT, FROM, course]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: []
+
+
+SELECT * FROM course
+Statements: [SELECT, FROM, course]
+Attributes: []
+FieldTypes: []
+Values: []
+
+
+SELECT * FROM course
+Statements: [SELECT, FROM, course]
+Attributes: []
+FieldTypes: []
+Values: []
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (4, 99, 100, 100, "B")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [4, 99, 100, 100, B]
+
+
+SELECT * FROM course
+Statements: [SELECT, FROM, course]
+Attributes: []
+FieldTypes: []
+Values: []
+
+
+DELETE FROM course
+Statements: [DELETE, FROM, course]
+Attributes: []
+FieldTypes: []
+Values: []
+
+
+SELECT * FROM course
+Statements: [SELECT, FROM, course]
+Attributes: []
+FieldTypes: []
+Values: []
+
+
+DROP TABLE course
+Statements: [DROP, TABLE, course]
+Attributes: []
+FieldTypes: []
+Values: []
+
+
+CREATE TABLE course (sid INT, homework INT, project INT, exam INT, grade STR20)
+Statements: [CREATE, TABLE, course]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: [INT, INT, INT, INT, STR20]
+Values: []
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (1, 99, 100, 100, "A")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [1, 99, 100, 100, A]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (3, 100, 100, 98, "C")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [3, 100, 100, 98, C]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (3, 100, 69, 64, "C")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [3, 100, 69, 64, C]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (15, 100, 50, 90, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [15, 100, 50, 90, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (15, 100, 99, 100, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [15, 100, 99, 100, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (17, 100, 100, 100, "A")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [17, 100, 100, 100, A]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (2, 100, 100, 99, "B")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [2, 100, 100, 99, B]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (4, 100, 100, 97, "D")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [4, 100, 100, 97, D]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (5, 100, 100, 66, "A")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [5, 100, 100, 66, A]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (6, 100, 100, 65, "B")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [6, 100, 100, 65, B]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (7, 100, 50, 73, "C")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [7, 100, 50, 73, C]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (8, 50, 50, 62, "C")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [8, 50, 50, 62, C]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (9, 50, 50, 61, "D")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [9, 50, 50, 61, D]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (10, 50, 70, 70, "C")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [10, 50, 70, 70, C]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (11, 50, 50, 59, "D")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [11, 50, 50, 59, D]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (12, 0, 70, 58, "C")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [12, 0, 70, 58, C]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (13, 0, 50, 77, "C")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [13, 0, 50, 77, C]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (14, 50, 50, 56, "D")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [14, 50, 50, 56, D]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [16, 0, 0, 0, E]
+
+
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (17, 100, 100, 100, "A")
+Statements: [INSERT, INTO, course, VALUES]
+Attributes: [sid, homework, project, exam, grade]
+FieldTypes: []
+Values: [17, 100, 100, 100, A]
+
+
+SELECT * FROM course
+Statements: [SELECT, FROM, course]
+Attributes: []
+FieldTypes: []
+Values: []
+
+
+SELECT DISTINCT grade FROM course
+Statements: [SELECT, DISTINCT, grade, FROM, course]
+Attributes: []
+FieldTypes: []
+Values: []
+
+
+SELECT DISTINCT * FROM course
+Statements: [SELECT, DISTINCT, FROM, course]
+Attributes: []
+FieldTypes: []
+Values: []
+
+
+SELECT * FROM course ORDER BY exam
+Statements: [SELECT, FROM, course, ORDER, BY, exam]
+Attributes: []
+FieldTypes: []
+Values: []
+
+
+CREATE TABLE course2 (sid INT, exam INT, grade STR20)
+Statements: [CREATE, TABLE, course2]
+Attributes: [sid, exam, grade]
+FieldTypes: [INT, INT, STR20]
+Values: []
+
+
+INSERT INTO course2 (sid, exam, grade) VALUES (1, 100, "A")
+Statements: [INSERT, INTO, course2, VALUES]
+Attributes: [sid, exam, grade]
+FieldTypes: []
+Values: [1, 100, A]
+
+
+INSERT INTO course2 (sid, exam, grade) VALUES (16, 25, "E")
+Statements: [INSERT, INTO, course2, VALUES]
+Attributes: [sid, exam, grade]
+FieldTypes: []
+Values: [16, 25, E]
+
+
+INSERT INTO course2 (sid, exam, grade) VALUES (17, 0, "A")
+Statements: [INSERT, INTO, course2, VALUES]
+Attributes: [sid, exam, grade]
+FieldTypes: []
+Values: [17, 0, A]
+
+
+INSERT INTO course2 (sid, exam, grade) VALUES (2, 99, "B")
+Statements: [INSERT, INTO, course2, VALUES]
+Attributes: [sid, exam, grade]
+FieldTypes: []
+Values: [2, 99, B]
+
+
+INSERT INTO course2 (sid, exam, grade) VALUES (3, 98, "C")
+Statements: [INSERT, INTO, course2, VALUES]
+Attributes: [sid, exam, grade]
+FieldTypes: []
+Values: [3, 98, C]
+
+
+INSERT INTO course2 (sid, exam, grade) VALUES (4, 97, "D")
+Statements: [INSERT, INTO, course2, VALUES]
+Attributes: [sid, exam, grade]
+FieldTypes: []
+Values: [4, 97, D]
+
+
+INSERT INTO course2 (sid, exam, grade) VALUES (5, 66, "A")
+Statements: [INSERT, INTO, course2, VALUES]
+Attributes: [sid, exam, grade]
+FieldTypes: []
+Values: [5, 66, A]
+
+
+INSERT INTO course2 (sid, exam, grade) VALUES (6, 65, "B")
+Statements: [INSERT, INTO, course2, VALUES]
+Attributes: [sid, exam, grade]
+FieldTypes: []
+Values: [6, 65, B]
+
+
+INSERT INTO course2 (sid, exam, grade) VALUES (18, 0, "A")
+Statements: [INSERT, INTO, course2, VALUES]
+Attributes: [sid, exam, grade]
+FieldTypes: []
+Values: [18, 0, A]
+
+
+INSERT INTO course2 (sid, exam, grade) VALUES (18, 0, "A")
+Statements: [INSERT, INTO, course2, VALUES]
+Attributes: [sid, exam, grade]
+FieldTypes: []
+Values: [18, 0, A]
+
+
+INSERT INTO course2 (sid, exam, grade) VALUES (18, 0, "A")
+Statements: [INSERT, INTO, course2, VALUES]
+Attributes: [sid, exam, grade]
+FieldTypes: []
+Values: [18, 0, A]
+
+
+INSERT INTO course2 (sid, exam, grade) VALUES (18, 0, "A")
+Statements: [INSERT, INTO, course2, VALUES]
+Attributes: [sid, exam, grade]
+FieldTypes: []
+Values: [18, 0, A]
+
+
+INSERT INTO course2 (sid, exam, grade) VALUES (18, 0, "A")
+Statements: [INSERT, INTO, course2, VALUES]
+Attributes: [sid, exam, grade]
+FieldTypes: []
+Values: [18, 0, A]
+
+
+INSERT INTO course2 (sid, exam, grade) VALUES (18, 0, "A")
+Statements: [INSERT, INTO, course2, VALUES]
+Attributes: [sid, exam, grade]
+FieldTypes: []
+Values: [18, 0, A]
+
+
+INSERT INTO course2 (sid, exam, grade) VALUES (18, 0, "A")
+Statements: [INSERT, INTO, course2, VALUES]
+Attributes: [sid, exam, grade]
+FieldTypes: []
+Values: [18, 0, A]
+
+
+INSERT INTO course2 (sid, exam, grade) VALUES (18, 0, "A")
+Statements: [INSERT, INTO, course2, VALUES]
+Attributes: [sid, exam, grade]
+FieldTypes: []
+Values: [18, 0, A]
+
+
+INSERT INTO course2 (sid, exam, grade) VALUES (18, 0, "A")
+Statements: [INSERT, INTO, course2, VALUES]
+Attributes: [sid, exam, grade]
+FieldTypes: []
+Values: [18, 0, A]
+
+
+INSERT INTO course2 (sid, exam, grade) VALUES (18, 0, "A")
+Statements: [INSERT, INTO, course2, VALUES]
+Attributes: [sid, exam, grade]
+FieldTypes: []
+Values: [18, 0, A]
+
+
+INSERT INTO course2 (sid, exam, grade) VALUES (18, 0, "A")
+Statements: [INSERT, INTO, course2, VALUES]
+Attributes: [sid, exam, grade]
+FieldTypes: []
+Values: [18, 0, A]
+
+
+INSERT INTO course2 (sid, exam, grade) VALUES (18, 0, "A")
+Statements: [INSERT, INTO, course2, VALUES]
+Attributes: [sid, exam, grade]
+FieldTypes: []
+Values: [18, 0, A]
+
+
+INSERT INTO course2 (sid, exam, grade) VALUES (18, 0, "A")
+Statements: [INSERT, INTO, course2, VALUES]
+Attributes: [sid, exam, grade]
+FieldTypes: []
+Values: [18, 0, A]
+
+
+INSERT INTO course2 (sid, exam, grade) VALUES (18, 0, "A")
+Statements: [INSERT, INTO, course2, VALUES]
+Attributes: [sid, exam, grade]
+FieldTypes: []
+Values: [18, 0, A]
+
+
+INSERT INTO course2 (sid, exam, grade) VALUES (18, 0, "A")
+Statements: [INSERT, INTO, course2, VALUES]
+Attributes: [sid, exam, grade]
+FieldTypes: []
+Values: [18, 0, A]
+
+
+INSERT INTO course2 (sid, exam, grade) VALUES (18, 0, "A")
+Statements: [INSERT, INTO, course2, VALUES]
+Attributes: [sid, exam, grade]
+FieldTypes: []
+Values: [18, 0, A]
+
+
+DROP TABLE course
+Statements: [DROP, TABLE, course]
+Attributes: []
+FieldTypes: []
+Values: []
+
+
+DROP TABLE course2
+Statements: [DROP, TABLE, course2]
+Attributes: []
+FieldTypes: []
+Values: []
+
+
+CREATE TABLE r (a INT, b INT)
+Statements: [CREATE, TABLE, r]
+Attributes: [a, b]
+FieldTypes: [INT, INT]
+Values: []
+
+
+CREATE TABLE s (b INT, c INT)
+Statements: [CREATE, TABLE, s]
+Attributes: [b, c]
+FieldTypes: [INT, INT]
+Values: []
+
+
+CREATE TABLE t (a INT, c INT)
+Statements: [CREATE, TABLE, t]
+Attributes: [a, c]
+FieldTypes: [INT, INT]
+Values: []
+
+
+INSERT INTO r (a, b) VALUES (0, 0)
+Statements: [INSERT, INTO, r, VALUES]
+Attributes: [a, b]
+FieldTypes: []
+Values: [0, 0]
+
+
+INSERT INTO r (a, b) VALUES (1, 1)
+Statements: [INSERT, INTO, r, VALUES]
+Attributes: [a, b]
+FieldTypes: []
+Values: [1, 1]
+
+
+INSERT INTO r (a, b) VALUES (1, 1)
+Statements: [INSERT, INTO, r, VALUES]
+Attributes: [a, b]
+FieldTypes: []
+Values: [1, 1]
+
+
+INSERT INTO r (a, b) VALUES (2, 2)
+Statements: [INSERT, INTO, r, VALUES]
+Attributes: [a, b]
+FieldTypes: []
+Values: [2, 2]
+
+
+INSERT INTO r (a, b) VALUES (3, 3)
+Statements: [INSERT, INTO, r, VALUES]
+Attributes: [a, b]
+FieldTypes: []
+Values: [3, 3]
+
+
+INSERT INTO r (a, b) VALUES (0, 0)
+Statements: [INSERT, INTO, r, VALUES]
+Attributes: [a, b]
+FieldTypes: []
+Values: [0, 0]
+
+
+INSERT INTO r (a, b) VALUES (1, 1)
+Statements: [INSERT, INTO, r, VALUES]
+Attributes: [a, b]
+FieldTypes: []
+Values: [1, 1]
+
+
+INSERT INTO r (a, b) VALUES (2, 2)
+Statements: [INSERT, INTO, r, VALUES]
+Attributes: [a, b]
+FieldTypes: []
+Values: [2, 2]
+
+
+INSERT INTO r (a, b) VALUES (100, 100)
+Statements: [INSERT, INTO, r, VALUES]
+Attributes: [a, b]
+FieldTypes: []
+Values: [100, 100]
+
+
+INSERT INTO r (a, b) VALUES (100, 100)
+Statements: [INSERT, INTO, r, VALUES]
+Attributes: [a, b]
+FieldTypes: []
+Values: [100, 100]
+
+
+INSERT INTO r (a, b) VALUES (100, 100)
+Statements: [INSERT, INTO, r, VALUES]
+Attributes: [a, b]
+FieldTypes: []
+Values: [100, 100]
+
+
+INSERT INTO r (a, b) VALUES (100, 100)
+Statements: [INSERT, INTO, r, VALUES]
+Attributes: [a, b]
+FieldTypes: []
+Values: [100, 100]
+
+
+INSERT INTO r (a, b) VALUES (100, 100)
+Statements: [INSERT, INTO, r, VALUES]
+Attributes: [a, b]
+FieldTypes: []
+Values: [100, 100]
+
+
+INSERT INTO r (a, b) VALUES (100, 100)
+Statements: [INSERT, INTO, r, VALUES]
+Attributes: [a, b]
+FieldTypes: []
+Values: [100, 100]
+
+
+INSERT INTO r (a, b) VALUES (100, 100)
+Statements: [INSERT, INTO, r, VALUES]
+Attributes: [a, b]
+FieldTypes: []
+Values: [100, 100]
+
+
+INSERT INTO r (a, b) VALUES (100, 100)
+Statements: [INSERT, INTO, r, VALUES]
+Attributes: [a, b]
+FieldTypes: []
+Values: [100, 100]
+
+
+INSERT INTO r (a, b) VALUES (100, 100)
+Statements: [INSERT, INTO, r, VALUES]
+Attributes: [a, b]
+FieldTypes: []
+Values: [100, 100]
+
+
+INSERT INTO r (a, b) VALUES (100, 100)
+Statements: [INSERT, INTO, r, VALUES]
+Attributes: [a, b]
+FieldTypes: []
+Values: [100, 100]
+
+
+INSERT INTO r (a, b) VALUES (100, 100)
+Statements: [INSERT, INTO, r, VALUES]
+Attributes: [a, b]
+FieldTypes: []
+Values: [100, 100]
+
+
+INSERT INTO r (a, b) VALUES (100, 100)
+Statements: [INSERT, INTO, r, VALUES]
+Attributes: [a, b]
+FieldTypes: []
+Values: [100, 100]
+
+
+INSERT INTO r (a, b) VALUES (100, 100)
+Statements: [INSERT, INTO, r, VALUES]
+Attributes: [a, b]
+FieldTypes: []
+Values: [100, 100]
+
+
+INSERT INTO r (a, b) VALUES (100, 100)
+Statements: [INSERT, INTO, r, VALUES]
+Attributes: [a, b]
+FieldTypes: []
+Values: [100, 100]
+
+
+INSERT INTO r (a, b) VALUES (100, 100)
+Statements: [INSERT, INTO, r, VALUES]
+Attributes: [a, b]
+FieldTypes: []
+Values: [100, 100]
+
+
+INSERT INTO r (a, b) VALUES (100, 100)
+Statements: [INSERT, INTO, r, VALUES]
+Attributes: [a, b]
+FieldTypes: []
+Values: [100, 100]
+
+
+INSERT INTO r (a, b) VALUES (100, 100)
+Statements: [INSERT, INTO, r, VALUES]
+Attributes: [a, b]
+FieldTypes: []
+Values: [100, 100]
+
+
+INSERT INTO r (a, b) VALUES (100, 100)
+Statements: [INSERT, INTO, r, VALUES]
+Attributes: [a, b]
+FieldTypes: []
+Values: [100, 100]
+
+
+INSERT INTO r (a, b) VALUES (100, 100)
+Statements: [INSERT, INTO, r, VALUES]
+Attributes: [a, b]
+FieldTypes: []
+Values: [100, 100]
+
+
+INSERT INTO r (a, b) VALUES (100, 100)
+Statements: [INSERT, INTO, r, VALUES]
+Attributes: [a, b]
+FieldTypes: []
+Values: [100, 100]
+
+
+INSERT INTO r (a,
