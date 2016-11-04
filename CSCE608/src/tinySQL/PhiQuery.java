@@ -32,6 +32,7 @@ public class PhiQuery {
 	    disk.resetDiskIOs();
 	    disk.resetDiskTimer();
 	}
+	
 	public boolean execute(String statement) {
 		parse.SyntaxParse(statement);
 		if (parse.words.size() == 0)
@@ -40,8 +41,9 @@ public class PhiQuery {
 			return createQuery();
 		if ("insert".equalsIgnoreCase(parse.words.get(0)))
 			return insertQuery();
-		if ("select".equalsIgnoreCase(parse.words.get(0)))
-			return selectQuery();
+		if ("select".equalsIgnoreCase(parse.words.get(0))) {
+			return selectQuery().size() != 0;
+		}
 		return true;
 	}
 	
@@ -88,8 +90,8 @@ public class PhiQuery {
 			Parser2.error("Table name is not given");
 		if (parse.fields.size() == 0)
 			Parser2.error("Fields size is wrong!");
-		if (parse.fields.size() != parse.values.size())
-			Parser2.error("field size and values size does not match");
+//		if (parse.fields.size() != parse.values.size())
+//			Parser2.error("field size and values size does not match");
 
 		//relations insertion into the relations
 		String relation_name = parse.words.get(2).toLowerCase();
@@ -104,30 +106,42 @@ public class PhiQuery {
 	    
 	    ArrayList<String> field_names= parse.fields;
 	    ArrayList<Field>  values = parse.values;
-	    
-	    for (int i = 0 ; i < values.size(); i++) {
-	    	Field f = values.get(i);
-	    	if (f.type == FieldType.INT)
-	    		tuple.setField(field_names.get(i), f.integer);
-	    	else
-	    		tuple.setField(field_names.get(i), f.str);
+	    if (values.size() != 0) {
+		    for (int i = 0 ; i < values.size(); i++) {
+		    	Field f = values.get(i);
+		    	if (f.type == FieldType.INT)
+		    		tuple.setField(field_names.get(i), f.integer);
+		    	else {
+		    		if(!f.str.equalsIgnoreCase("NULL"))
+		    			tuple.setField(field_names.get(i), f.str);
+		    		else 
+		    			tuple.setField(field_names.get(i), 0);
+		    		}
+		    }
+		    appendTupleToRelation(relation_reference, mem, 5, tuple);
+	    }else {
+	    		if (parse.select ==null)
+	    			Parser2.error("Error in Update for select");
+	    		for(Tuple tu:selectQuery()) {
+	    			tuple = tu;
+	    			appendTupleToRelation(relation_reference, mem, 5, tuple);
+	    		}
 	    }
-	    appendTupleToRelation(relation_reference, mem, 5, tuple);
 	    System.out.print("Number of Blocks " + relation_reference.getNumOfTuples() +"\n");
 	    System.out.print("Created a tuple " + tuple + " of " + relation_name +" through the relation" + "\n");
-	    System.out.print("The tuple is invalid? " + (tuple.isNull()?"TRUE":"FALSE") + "\n");
+//	    System.out.print("The tuple is invalid? " + (tuple.isNull()?"TRUE":"FALSE") + "\n");
 	    System.out.print("\n");
 		return true;
 	}
 	
-	public boolean selectQuery() {
+	public ArrayList<Tuple> selectQuery() {
 		
 		if (parse.words.size() < 1)
 			Parser2.error("Select Size is Wrong!");
 		if (parse.select == null)
 			Parser2.error("Select Node Can't be NULL!");
-		if (!"select".equalsIgnoreCase(parse.words.get(0)))
-			Parser2.error("Select Syntax is wrong!");
+//		if (!"select".equalsIgnoreCase(parse.words.get(0)))
+//			Parser2.error("Select Syntax is wrong!");
 		if (!parse.select.from)
 			Parser2.error("Select Syntax is wrong!");
 		
@@ -135,8 +149,8 @@ public class PhiQuery {
 		ArrayList<String> attributes = select.attributes;
 		String[] tables = select.table;
 		boolean distinct = select.distinct;
-		OPTree optree = null;
-		if (select.where) optree = select.conditions;
+		ExpressionTree ExpressionTree = null;
+		if (select.where) ExpressionTree = select.conditions;
 		
 		//retrieve all the tuples in this relations and filter it
 		//join will be implemented later
@@ -152,8 +166,8 @@ public class PhiQuery {
 		    	relation_reference.getBlock(i,0);
 		    	Block block_reference=mem.getBlock(0);
 		    	for (Tuple tup: block_reference.getTuples()) {
-		    		if (optree != null) { 
-		    			if (optree.check(relation_reference.getSchema(), tup))
+		    		if (ExpressionTree != null) { 
+		    			if (ExpressionTree.check(relation_reference.getSchema(), tup))
 		    				tuples.add(tup);
 		    		}
 		    		else tuples.add(tup);
@@ -162,12 +176,13 @@ public class PhiQuery {
 		}
 		
 		//output the retrieved the results
-//		System.out.println("The initial select all returned below");
-		for (Tuple tup: tuples)
-			System.out.println(tup);
-		System.out.println("\n");
+		if ("select".equalsIgnoreCase(parse.words.get(0))) {
+			for (Tuple tup: tuples) 
+				System.out.println(tup);
+			System.out.println("\n");
+		}
 		
-		return true;
+		return tuples;
 	}
 	
 	  private static void appendTupleToRelation(Relation relation_reference, MainMemory mem, int memory_block_index, Tuple tuple) {
@@ -217,28 +232,36 @@ public class PhiQuery {
 		}catch(IOException e) {
 			System.out.println(e);
 		}
+		
+		System.out.println("File Parsing Completed!");
+//		String select = "SELECT * FROM course where course.grade = \"A\"";
+//		query.execute(select);
 	}
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
 		String create ="CREATE TABLE course (sid INT, homework INT, project INT, exam INT, grade STR20)";
-		String insert0 = "INSERT INTO course (sid, homework, project, exam, grade) VALUES (1, 99, 100, 100, \"A\")";
+		String insert0 = "INSERT INTO course (sid, homework, project, exam, grade) VALUES (1, NULL, 100, 100, \"A\")";
 		String insert1 = "INSERT INTO course (sid, homework, project, exam, grade) VALUES (3, 100, 100, 98, \"C\")";
 		String insert2 = "INSERT INTO course (sid, homework, project, exam, grade) VALUES (3, 100, 69, 64, \"C\")";
 		String insert3 = "INSERT INTO course (sid, homework, project, exam, grade) VALUES (15, 100, 50, 90, \"E\")";
 		String insert4 = "INSERT INTO course (sid, homework, project, exam, grade) VALUES (15, 100, 99, 100, \"E\")";
 		String insert5 = "INSERT INTO course (sid, homework, project, exam, grade) VALUES (17, 100, 100, 100, \"A\")";
-		String select = "SELECT * FROM course where course.grade = \"A\"";
+		String select = "SELECT * FROM course";
+		String insert = "INSERT INTO course (sid, homework, project, exam, grade) SELECT * FROM course";
+		String select2 = "SELECT * FROM course";
 		String filename = "test.txt";
 		PhiQuery query = new PhiQuery();
-		//parseFile(filename);
-		query.execute(create);
-		query.execute(insert0);
-		query.execute(insert1);
-		query.execute(insert2);
-		query.execute(insert3);
-		query.execute(insert4);
-		query.execute(insert5);
-		query.execute(select);
+		parseFile(filename);
+//		query.execute(create);
+//		query.execute(insert0);
+//		query.execute(insert1);
+//		query.execute(insert2);
+//		query.execute(insert3);
+//		query.execute(insert4);
+//		query.execute(insert5);
+//		query.execute(select);
+//		query.execute(insert);
+//		query.execute(select2);
 	}
 
 }

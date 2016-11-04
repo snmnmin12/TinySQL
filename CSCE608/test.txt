@@ -1,5 +1,15 @@
 CREATE TABLE course (sid INT, homework INT, project INT, exam INT, grade STR20)
 INSERT INTO course (sid, homework, project, exam, grade) VALUES (1, 99, 100, 100, "A")
+SELECT * FROM course
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (2, NULL, 100, 100, "E")
+SELECT * FROM course
+INSERT INTO course (sid, grade, exam, project, homework) VALUES (3, "E", 100, 100, 100)
+SELECT * FROM course
+INSERT INTO course (sid, homework, project, exam, grade) SELECT * FROM course
+SELECT * FROM course
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (4, 99, 100, 100, "B")
+SELECT * FROM course
+INSERT INTO course (sid, homework, project, exam, grade) VALUES (1, 99, 100, 100, "A")
 INSERT INTO course (sid, homework, project, exam, grade) VALUES (3, 100, 100, 98, "C")
 INSERT INTO course (sid, homework, project, exam, grade) VALUES (3, 100, 69, 64, "C")
 INSERT INTO course (sid, homework, project, exam, grade) VALUES (15, 100, 50, 90, "E")
@@ -59,4 +69,4 @@ INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E
 INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
 INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
 INSERT INTO course (sid, homework, project, exam, grade) VALUES (17, 100, 100, 100, "A")
-SELECT * FROM course
+SELECT * FROM course WHERE grade = "A"

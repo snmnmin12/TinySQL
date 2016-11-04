@@ -9,7 +9,7 @@ public class TreeNode {
 	public boolean from;
 	public String[] table;
 	public boolean where;
-	public OPTree conditions;
+	public ExpressionTree conditions;
 	public TreeNode parent;
 	public TreeNode child;
 	public String order_by;

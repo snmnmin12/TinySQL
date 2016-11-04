@@ -16,8 +16,6 @@ import java.util.Arrays;
 public class Parser2{
 	private final String error1 = "Syntax Error!";
 	private final String error2 = "Create Error!";
-	private static final Set<String> statements =
-        new HashSet<String>(Arrays.asList("create","drop","select","delete","insert","source"));
 	public String sentence;
 	public ArrayList<String> words;
 	public ArrayList<String> fields;
@@ -58,7 +56,7 @@ public class Parser2{
 				return Letters(sentence, i);
 			else {
 				error(error1);
-				return false;
+//				return false;
 			}
 				
 		}else {
@@ -109,7 +107,7 @@ public class Parser2{
 				//check if order by exists or not,
 					int index = sentence.toLowerCase().indexOf("order");
 					String conditions = sentence.substring(res.second+1, index==-1?sentence.length():index).toLowerCase();
-					select.conditions = OPTree.BuildTree(conditions);
+					select.conditions = ExpressionTree.BuildTree(conditions);
 					if (index != -1) {
 						index = sentence.toLowerCase().indexOf("by");
 						if (index == -1) error("Error in order");
@@ -154,7 +152,7 @@ public class Parser2{
 				else if ("where".equalsIgnoreCase(res.first)) {
 					delete.where = true;
 					String e = sentence.substring(res.second+1, sentence.length()).trim();
-					delete.conditions = OPTree.BuildTree(e);
+					delete.conditions = ExpressionTree.BuildTree(e);
 					break;
 				}else {
 					return false;
@@ -196,7 +194,7 @@ public class Parser2{
 			res = lettersRetrieve(sentence, i);
 			words.add(res.first);
 			if ("select".equalsIgnoreCase(res.first))
-				return selectCommand(sentence, i);
+				return selectCommand(sentence, res.second);
 			i = res.second;
 			}else if (sentence.charAt(i) == '('){
 			i = attributeRetrieve(sentence, i);
@@ -332,7 +330,7 @@ public class Parser2{
 	public static void main(String[] args) throws IOException {
 		
 		Parser2 parse = new Parser2();
-		String filename = "test.txt";
+		String filename = "test2.txt";
 		String filename2 = "output.txt";
 		String input = "source test.txt";
 		//System.out.println(input.indexOf(" "));
@@ -347,6 +345,14 @@ public class Parser2{
 			System.out.println(e);
 		}
 		//parseFile(filename);
+//		String statement = "SELECT * FROM course, course2 WHERE course.sid = course2.sid ORDER BY course.exam";
+//		if (parse.SyntaxParse(statement)) {
+//		System.out.println(parse);
+//		}
+//		String statement = "INSERT INTO course (sid, homework, project, exam, grade) SELECT * FROM course";
+//		if (parse.SyntaxParse(statement)) {
+//			System.out.println(parse);
+//		}
 //		if (parse.SyntaxParse("CREATE TABLE course (sid INT, homework INT, project INT, exam INT, grade STR20)")) {
 //			System.out.println(parse);
 //		}
