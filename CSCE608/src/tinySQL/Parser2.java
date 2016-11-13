@@ -9,9 +9,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Arrays;
 
 public class Parser2{
 	private final String error1 = "Syntax Error!";
@@ -97,6 +94,7 @@ public class Parser2{
 					if (endindex == -1) endindex = sentence.toLowerCase().indexOf("order");
 					if (endindex == -1) endindex = sentence.length();
 					str = sentence.substring(res.second,endindex).trim();
+					str = str.replaceAll("\\s+", "");
 					select.table = str.split(",");
 					i = endindex;
 					continue;
@@ -195,9 +193,9 @@ public class Parser2{
 			words.add(res.first);
 			if ("select".equalsIgnoreCase(res.first))
 				return selectCommand(sentence, res.second);
-			i = res.second;
+				i = res.second;
 			}else if (sentence.charAt(i) == '('){
-			i = attributeRetrieve(sentence, i);
+				i = attributeRetrieve(sentence, i);
 			}
 		}
 		return true;
@@ -339,11 +337,11 @@ public class Parser2{
 //		System.out.println(sample.toLowerCase());
 //		System.out.println(sample);
 //		sample.m
-		try {
-		 parseFile(filename);
-		}catch(IOException e){
-			System.out.println(e);
-		}
+//		try {
+//		 parseFile(filename);
+//		}catch(IOException e){
+//			System.out.println(e);
+//		}
 		//parseFile(filename);
 //		String statement = "SELECT * FROM course, course2 WHERE course.sid = course2.sid ORDER BY course.exam";
 //		if (parse.SyntaxParse(statement)) {
@@ -370,12 +368,12 @@ public class Parser2{
 //		if (parse.SyntaxParse("INSERT INTO course (sid, homework, project, exam, grade) VALUES (1, 99, 100, 100, 'A')")) {
 //			System.out.println(parse);
 //		}
-//		if (parse.SyntaxParse("SELECT * FROM course")) {
-//			System.out.println(parse.words());
-//			System.out.println(parse.fields);
-//			System.out.println(parse.fieldtypes);
-//			System.out.println(parse.values);
-//		}
+		if (parse.SyntaxParse("SELECT * FROM course, course2")) {
+			System.out.println(parse.words);
+			System.out.println(parse.fields);
+			System.out.println(parse.fieldtypes);
+			System.out.println(parse.values);
+		}
 	}
 }
 

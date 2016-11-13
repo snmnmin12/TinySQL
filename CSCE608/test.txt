@@ -69,4 +69,8 @@ INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E
 INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
 INSERT INTO course (sid, homework, project, exam, grade) VALUES (16, 0, 0, 0, "E")
 INSERT INTO course (sid, homework, project, exam, grade) VALUES (17, 100, 100, 100, "A")
-SELECT * FROM course WHERE grade = "A"
+CREATE TABLE course2 (sid INT, exam INT, grade STR20)
+INSERT INTO course2 (sid, exam, grade) VALUES (1, 100, "A")
+INSERT INTO course2 (sid, exam, grade) VALUES (16, 25, "E")
+INSERT INTO course2 (sid, exam, grade) VALUES (17, 0, "A")
+SELECT * FROM course, course2
