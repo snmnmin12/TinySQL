@@ -1,57 +1,61 @@
 package tinySQL;
 
+
 import java.util.ArrayList;
 
 import storageManager.Field;
+import storageManager.FieldType;
 import storageManager.Tuple;
 
-public class UTuple {
-	private ArrayList<String> fieldnames;
-	private ArrayList<Field> fields; // stores int and string fields
-	public UTuple(Tuple tuple) {
-		this.fieldnames = new ArrayList<String>(tuple.getSchema().getFieldNames());
+public class UTuple implements Comparable<UTuple>{
+	private final  Field key;
+	private final ArrayList<Field> fields;
+//	public UTuple() {}
+	public UTuple(Field key, Tuple tuple) {
+		this.key = key;
 		this.fields = new ArrayList<Field>();
 		for (int i = 0; i < tuple.getNumOfFields(); i++) 
-			fields.add(tuple.getField(i));
-	}
-	public UTuple() {
-		this.fieldnames = new ArrayList<String>();
-		this.fields = new ArrayList<Field>();
-	}
-	public UTuple(ArrayList<String> fieldnames) {
-		this.fieldnames = fieldnames;
-		this.fields = new ArrayList<Field>();
-	}
-	public UTuple(ArrayList<String> fieldnames, ArrayList<Field> fields) {
-		this.fieldnames = fieldnames;
+		fields.add(tuple.getField(i));
+	}	
+	public UTuple(ArrayList<Field> fields) {
 		this.fields = fields;
+		this.key = new Field();
 	}
-	public ArrayList<String> getNames() {
-		return  fieldnames;
+	
+	public UTuple(Field key, ArrayList<Field> fields) {
+		this.fields = fields;
+		this.key = key;
 	}
-	public ArrayList<Field> getFields() {
+
+	public ArrayList<Field> fields() {
 		return fields;
 	}
-	public void addName(String fieldname) {
-		fieldnames.add(fieldname);
+	
+	public String toString() {
+		return fields.toString();
 	}
-	public void addField(Field f) {
-		fields.add(f);
+	
+	@Override
+	public int compareTo(UTuple key2) {
+		// TODO Auto-generated method stub
+		if (key.type == FieldType.INT)
+			return  ((Integer)key.integer).compareTo(key2.key.integer);
+		if (key.type == FieldType.STR20)
+			return  key.str.compareTo(key2.key.str);
+		return 0;
 	}
-	public void addName(ArrayList<String> fieldnames) {
-		for (String fieldname: fieldnames)
-			fieldnames.add(fieldname);
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || !(obj instanceof UTuple))
+			return false;
+		return this.hashCode() == obj.hashCode();
 	}
-	public void addField(ArrayList<Field> fs) {
-		for (Field f:fs)
-			fields.add(f);
-	}
-	public Field getField(String field_name) {
-		int i = 0;
-		for (;i < fieldnames.size(); i++)
-			if (field_name.equalsIgnoreCase(fieldnames.get(i))) {
-				break;
-			}
-		return fields.get(i);
+	//to make this class hashable, so it can be used by hashmap
+	public int hashCode() {
+		String str = "";
+		for (Field f:fields)
+			str += f;
+		return str.hashCode();
 	}
 }

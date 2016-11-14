@@ -213,10 +213,11 @@ public class Testing {
 //    tuple.setField(3,"v41");
 //
 //    // Another way of setting the tuples
-//    tuple.setField("f1","v11");
-//    tuple.setField("f2",21);
-//    tuple.setField("f3",31);
-//    tuple.setField("f4","v41");
+    tuple.setField("f1","v11");
+    tuple.setField("f2",21);
+    tuple.setField("f3",31);
+    tuple.setField("f4","v41");
+    System.out.println(tuple);
 
     // Print the information about the tuple
 //    System.out.print("Created a tuple " + tuple + " of ExampleTable3 through the relation" + "\n");
@@ -258,7 +259,7 @@ public class Testing {
 //    System.err.flush();
     
     //===================Block=============================
-//    System.out.print("===================Block=============================" + "\n");
+    System.out.print("===================Block=============================" + "\n");
 //    // Set up a block in the memory
 //    System.out.print("Clear the memory block 0" + "\n");
 //    Block block_reference=mem.getBlock(0); //access to memory block 0

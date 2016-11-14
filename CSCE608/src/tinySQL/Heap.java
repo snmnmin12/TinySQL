@@ -1,5 +1,6 @@
 package tinySQL;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 public class Heap<T extends Comparable<T>> {
 	private static final int DEFAULT_CAPACITY = 10;
@@ -28,15 +29,18 @@ public class Heap<T extends Comparable<T>> {
 	      System.arraycopy(array, 1, arr, 0, array.length-1);
 	   }
 	
-	
-	public void insert(T item) {
+	public ArrayList<T> Build() {
+		  ArrayList<T> res = new ArrayList<T>();
+	      while(size >= 1)
+	    	  res.add(remove());
+	      return res;
+	}
+ 	public void insert(T item) {
 		if (size == array.length - 1) {
 			array = resize();
 		}
 		//insert element into heap
-		size++;
-		int index = size;
-		array[index] = item;
+		array[++size] = item;
 		swimup();
 	}
 	
@@ -54,6 +58,10 @@ public class Heap<T extends Comparable<T>> {
 	
     public String toString() {
         return Arrays.toString(Arrays.copyOfRange(array, 1, size));
+    }
+    
+    public ArrayList<T> ArrtoList(){
+    	return new ArrayList<T>(Arrays.asList(Arrays.copyOfRange(array, 1, size)));
     }
     
 	public int getSize() {
@@ -90,12 +98,12 @@ public class Heap<T extends Comparable<T>> {
 	    }        	
 	}
 	
-	//build a max-heap first, then remove the max element to sort it
+	//build a min-heap first, then remove the max element to sort it
 	private void siftdown(int k, int n) {
 	  while (2*k <= n) {
 		int j = 2*k;
-		if (j < n && array[j].compareTo(array[j+1]) < 0) j++;
-		if (array[k].compareTo(array[j]) >= 0) break;
+		if (j < n && array[j].compareTo(array[j+1]) > 0) j++;
+		if (array[k].compareTo(array[j]) <= 0) break;
 		swap(k,j);
 		k = j;
 	  }
@@ -121,11 +129,12 @@ public class Heap<T extends Comparable<T>> {
 		Integer[] a = {488,667,634,380,944,594,783,584,550,665,721,819,285,344,503,807,491,623,845,300};
 		for (int i = 0; i < a.length; i++)
 			h2.insert(a[i]);
-		System.out.println(h2);
+		ArrayList<Integer> res = h2.Build();
+		System.out.println(res);
 	      
-	      Integer[] a2 = {4,7,7,7,5,0,2,3,5,1};
-	      Heap<Integer> tmp = new Heap<Integer>(a2);
-	      System.out.println(Arrays.toString(a2));
+//	      Integer[] a2 = {4,7,7,7,5,0,2,3,5,1};
+//	      Heap<Integer> tmp = new Heap<Integer>(a);
+//	      System.out.println(Arrays.toString(a));
 	}
 
 }

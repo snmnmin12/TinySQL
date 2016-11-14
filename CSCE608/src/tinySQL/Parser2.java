@@ -84,9 +84,9 @@ public class Parser2{
 			i = spaceTrim(sentence,i);
 			if (isLetter(sentence, i)) {
 				res = lettersRetrieve(sentence, i);
-				if ("distinct".equals(res.first.toLowerCase()))
+				if ("distinct".equalsIgnoreCase(res.first))
 					select.distinct = true;
-				else if ("from".equals(res.first.toLowerCase())) {
+				else if ("from".equalsIgnoreCase(res.first)) {
 					select.from  = true;
 					String str;
 //					res = lettersRetrieve(sentence, res.second+1);
@@ -99,7 +99,7 @@ public class Parser2{
 					i = endindex;
 					continue;
 				}
-				else if ("where".equals(res.first.toLowerCase())) {
+				else if ("where".equalsIgnoreCase(res.first)) {
 					select.where = true;
 					spaceTrim(sentence, i);
 				//check if order by exists or not,

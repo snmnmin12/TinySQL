@@ -1,6 +1,7 @@
 package tinySQL;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Stack;
 
 import storageManager.Field;
@@ -180,6 +181,22 @@ public class ExpressionTree {
 		return inorder();
 	}
 	
+	public ExpressionTree getLeft() {
+		return left;
+	}
+
+	public ExpressionTree getRight() {
+		return right;
+	}
+	
+	public String getOp() {
+		return op;
+	}
+	
+	public void setOp(String op) {
+		 this.op = op;
+	}
+	
 	private String inorder() {
 		String str = "";
 		if (left != null) 
@@ -190,6 +207,7 @@ public class ExpressionTree {
 		return str;
 	}
 	
+	//check if the select or delete conditions are met from select
 	public boolean check(Schema schema, Tuple tuple) {
 		String str = evaluate(schema, tuple);
 		if (str.equals("false")) return false;
@@ -197,16 +215,49 @@ public class ExpressionTree {
 		return true;
 	}
 	
-	public int contains(ArrayList<String> arr, String e) {
-//		int i = e.indexOf('.');
-//		if (i != -1) e = e.substring(i+1);
+	public ArrayList<ExpressionTree> hasSelection() {
+		if (left == null)
+			return null;
+		//check if the attribute has is table.attribute
+		char l = left.op.charAt(0);
+		char r = right.op.charAt(0);
+		boolean leftleaf  = Character.isLetter(l) || Character.isDigit(l); 
+		boolean rightleaf = Character.isLetter(r) || Character.isDigit(r);
+		
+		if (leftleaf && rightleaf) {
+			ArrayList<ExpressionTree> tree = new ArrayList<ExpressionTree>();
+			tree.add(this);
+			return tree;
+		}
+		
+		ArrayList<ExpressionTree> lnode = left.hasSelection();
+		ArrayList<ExpressionTree> rnode = right.hasSelection();
+		
+		if (lnode != null) {
+			if (rnode != null) 
+				lnode.addAll(rnode);
+			return lnode;
+		}
+		else if(lnode == null && rnode != null) {
+			return rnode;
+		}
+		
+		return null;
+	}
+	//helper method to find if conditions is value or attributes
+	//helper function to check the index of attribute in schema
+	private int contains(ArrayList<String> arr, String e) {
 		int i;
-		for (i = 0; i < arr.size(); i++)
+		int index = e.indexOf('.');
+		for (i = 0; i < arr.size(); i++) {
 			if (arr.get(i).equalsIgnoreCase(e)) 
 				return i;
+			else if (index!=-1 && arr.get(i).equalsIgnoreCase(e.substring(index+1)))
+					return i;
+		}
 		return -1;
 	}
-	
+	//helper function plug the tuple values inside and evaluate
 	public String evaluate(Schema schema, Tuple tuple) {
 		if (left == null) { 
 			int i = contains(schema.getFieldNames(),op);
@@ -289,18 +340,21 @@ public class ExpressionTree {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 //		String words = "course.sid = course2.sid AND course.exam > course2.exam";
-//		String words2 = "course.sid = course2.sid AND course.exam = 100 AND course2.exam = 100";
+		String words2 = "course.sid = course2.sid AND course.exam = 100 AND course2.exam = 100";
 //		String words3 = "course.sid = course2.sid AND course.grade = \"A\" AND course2.grade = \"A\"";
 //		String words4 = "(exam + homework) = 200";
 //		String words5 = "r.a = t.a AND r.b = s.b AND s.c = t.c";
-		String word6 = "( exam * 30 + homework * 20 + project * 50 ) / 100 = 100";
+//		String word6 = "( exam * 30 + homework * 20 + project * 50 ) / 100 = 100";
 //		BuildT(words);
 //		BuildT(words2);
 //		BuildT(words3);
 //		BuildT(words4);
 //		BuildT(words5);
-		ExpressionTree otree = BuildTree(word6);
+		ExpressionTree otree = BuildTree(words2);
 		System.out.println(otree);
+		ArrayList<ExpressionTree> ets = otree.hasSelection();
+		for (ExpressionTree tree: ets) 
+			System.out.println(tree);
 	}
 
 }
