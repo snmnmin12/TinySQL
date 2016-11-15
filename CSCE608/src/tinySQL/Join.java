@@ -45,13 +45,16 @@ public class Join {
 		}
 	}
 	//return intermediate table name after join
-	public static String JoinTable2(PhiQuery phi, String table1, String table2, ExpressionTree tree) {
+	public static String JoinTable2(PhiQuery phi, String table1, String table2, ArrayList<ExpressionTree> tree) {
 		
 		SchemaManager schema_manager = phi.schema_manager;
 		MainMemory mem = phi.mem;
 		
 		Relation rela_reference1 = schema_manager.getRelation(table1);
 		Relation rela_reference2 = schema_manager.getRelation(table2);
+		//select the right expression tree
+		int index = tree == null?-1:selectExpressionTree(table1, table2, tree);
+		ExpressionTree treenode = index==-1?null:tree.get(index);
 		//we have to create fields
 		ArrayList<String> fieldnames = new ArrayList<String>();
 		operation(rela_reference1,fieldnames, table1);
@@ -92,7 +95,7 @@ public class Join {
 			    		Block block_reference1=mem.getBlock(k);
 			    		if (block_reference1.getNumTuples() == 0) continue;
 			    		//operation on blocks for relation 1 and relation 2
-			    		createTuples(block_reference1, block_reference2,relation_reference,mem,tree);
+			    		createTuples(block_reference1, block_reference2,relation_reference,mem,treenode);
 			    	}
 			    	relationnumBlocks1 -= senttomem1;
 			    	alreadyreadblocks += senttomem1;
@@ -128,5 +131,14 @@ public class Join {
 			else 
 				tuple.setField(i, tu1.getField(j).str);
 		}
+	}
+	
+	//select the right tree
+	private static int selectExpressionTree(String table1, String table2, ArrayList<ExpressionTree> alltrees) {
+		for (int i = 0; i < alltrees.size(); i++) {
+			if (alltrees.get(i).toString().contains(table1) && alltrees.get(i).toString().contains(table2))
+				return i;
+		}
+		return 0;
 	}
 }

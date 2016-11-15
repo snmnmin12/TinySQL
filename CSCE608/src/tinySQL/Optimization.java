@@ -7,8 +7,8 @@ import storageManager.*;
 public class Optimization {
 	
 	public static void joinOptimization(ArrayList<String> tables, SchemaManager schem_manager) {
-		Relation relation_referene = schem_manager.getRelation(tables.get(0));
-		int size = tables.size();
+//		Relation relation_referene = schem_manager.getRelation(tables.get(0));
+//		int size = tables.size();
 		
 	}
 	

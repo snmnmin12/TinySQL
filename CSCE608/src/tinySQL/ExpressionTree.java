@@ -1,7 +1,6 @@
 package tinySQL;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Stack;
 
 import storageManager.Field;
@@ -319,7 +318,8 @@ public class ExpressionTree {
 				boolean res = (lvalue.equalsIgnoreCase(rvalue));
 				if (!res) return "false";
 				else return "true";
-			}else if(op.equals("&&")) {
+			}
+			else if(op.equals("&&")) {
 				if (lvalue.equals("false"))
 				   return "false";
 				if (rvalue.equals("false"))
@@ -331,7 +331,7 @@ public class ExpressionTree {
 					if (rvalue.equals("true"))
 						return "true";
 					return "false";
-				}
+			}
 		}
 		return result;
 		
