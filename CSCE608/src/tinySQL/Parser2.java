@@ -12,7 +12,6 @@ import java.util.ArrayList;
 
 public class Parser2{
 	private final String error1 = "Syntax Error!";
-	private final String error2 = "Create Error!";
 	public String sentence;
 	public ArrayList<String> words;
 	public ArrayList<String> fields;
@@ -50,7 +49,7 @@ public class Parser2{
 			else if ("delete".equalsIgnoreCase(res.first))
 				return deleteCommand(sentence, res.second);
 			else if ("source".equalsIgnoreCase(res.first))
-				return Letters(sentence, i);
+				return Letters(sentence, res.second);
 			else {
 				error(error1);
 //				return false;
@@ -185,7 +184,7 @@ public class Parser2{
 
 	//helper method to retrive all the letters from the string
 	public boolean Letters(String sentence, int i) {
-		Pair<String, Integer> res;
+		Pair<String, Integer> res = null;
 		for (; i < sentence.length();) {
 			i = spaceTrim(sentence,i);
 			if (isLetter(sentence, i)) {
@@ -297,6 +296,7 @@ public class Parser2{
 		return str;
 	}
 	
+	@SuppressWarnings("resource")
 	public static void parseFile(String... files) throws IOException
 	{
 	    if(files.length == 0) error("Error files");
@@ -328,9 +328,9 @@ public class Parser2{
 	public static void main(String[] args) throws IOException {
 		
 		Parser2 parse = new Parser2();
-		String filename = "test2.txt";
-		String filename2 = "output.txt";
-		String input = "source test.txt";
+//		String filename = "test2.txt";
+//		String filename2 = "output.txt";
+//		String input = "source test.txt";
 		//System.out.println(input.indexOf(" "));
 		//File file = new File(filename);
 //		String sample = "SELECT * FROM course WHERE exam = 100 ORDER BY exam";

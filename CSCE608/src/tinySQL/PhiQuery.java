@@ -4,7 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -19,7 +19,8 @@ public class PhiQuery {
 	public SchemaManager schema_manager;
 	public HashSet<UTuple> hash;
 	public Heap<UTuple> heap;
-	
+	public boolean pipeline;
+	public PrintStream out;
 	public PhiQuery(){
 		//this is the constructor for execute the physical queries
 		parse = new Parser2();
@@ -27,12 +28,13 @@ public class PhiQuery {
 		disk=new Disk();
 		hash = null;
 		heap = null;
+		pipeline = true;
 		schema_manager=new SchemaManager(mem,disk);
 	    disk.resetDiskIOs();
 	    disk.resetDiskTimer();
 	}
 	
-	public boolean execute(String statement) {
+	public boolean execute(String statement) throws IOException {
 		
 		parse.SyntaxParse(statement);
 		if (parse.words.size() == 0)
@@ -50,8 +52,8 @@ public class PhiQuery {
 		}else if ("drop".equalsIgnoreCase(parse.words.get(0))) {
 			return dropQuery();
 		}else if ("source".equalsIgnoreCase(parse.words.get(0))) {
-			System.out.println("I am here to process files!");
-			return true;
+			String[] files = parse.words.subList(1,parse.words.size()) .toArray(new String[parse.words.size()-1]);
+			return parseFile(files);
 		} else {
 			return false;
 		}
@@ -127,10 +129,6 @@ public class PhiQuery {
 	    			appendTupleToRelation(relation_reference, mem, 5, tuple);
 	    		}
 	    }
-//	    System.out.print("Number of Blocks " + relation_reference.getNumOfTuples() +"\n");
-//	    System.out.print("Created a tuple " + tuple + " of " + relation_name +" through the relation" + "\n");
-//	    System.out.print("The tuple is invalid? " + (tuple.isNull()?"TRUE":"FALSE") + "\n");
-//	    System.out.print("\n");
 		return true;
 	}
 	
@@ -146,9 +144,10 @@ public class PhiQuery {
 		//check if the selected results should be pipelined or materialized
 		hash = null;
 		heap = null;
-		boolean pipeline = "select".equalsIgnoreCase(parse.words.get(0));
-		if (pipeline)
-			System.out.println(parse.sentence+" started!");
+		pipeline = "select".equalsIgnoreCase(parse.words.get(0));
+//		if (pipeline)
+//			System.out.println(parse.sentence+" started!");
+		
 		TreeNode select = parse.select;
 		String[] finaltables = select.table;
 		ArrayList<String> tables = new ArrayList<String>();
@@ -159,6 +158,9 @@ public class PhiQuery {
 		if (select.where) 
 			Tree = select.conditions;
 		
+		if (pipeline) 
+			outputFields(select.attributes,tables);
+			
 		//optimizations, possible, first optimize the join operation
 		ArrayList<String> temptables = Optimization.selectOptimization(finaltables, this, Tree);
 		if ((temptables != null) && (temptables.size()!=0)) {
@@ -172,15 +174,15 @@ public class PhiQuery {
 		{
 			output = heap.Build();
 		}	
-		
 		if (pipeline)
 		{
-			for (UTuple res:output)
-				System.out.println(res.toString());
-			System.out.println(parse.sentence+" is over!"+"\n");
+			for (UTuple res: output)
+				System.out.println(res);
+			//System.out.println("\n");
+//			System.out.println(parse.sentence+" is over!"+"\n");
 		}
 		else 
-			return toTuples(output, select.attributes);
+			return toTuples(tables, output, select.attributes);
 		removeTempRelations(tables, finaltables);
 		return null;
 	}
@@ -206,7 +208,6 @@ public class PhiQuery {
 			Parser2.error("Select Syntax is wrong!");
 		if (!parse.delete.from)
 			Parser2.error("Select Syntax is wrong!");
-		
 		TreeNode delete = parse.delete;
 		String table = delete.table[0];
 		tableScan(table,delete, 1, null);
@@ -217,27 +218,41 @@ public class PhiQuery {
 	
 	//***********************************************************************************************//
 	//below are helper method for execute the above methods
-	
+	//check if all blocks can be brought to memeory
+	private boolean allInMemory(ArrayList<String> tables)  {
+		int i = 0;
+		int numblocks = 0;
+		for (; i < tables.size(); i++) {
+			Relation relation_reference = schema_manager.getRelation(tables.get(i));
+			numblocks += relation_reference.getNumOfBlocks();
+		}
+		if (numblocks <= mem.getMemorySize() && tables.size() > 3)
+			return true;
+		return false;
+	}
 	//to execute join of many tables, after that read all tuples from one relations using table scan
 	private ArrayList<UTuple> excuteJoin(ArrayList<String> tables, TreeNode select) {
-		String pretable = null;
-		String curtable = null;
-		ExpressionTree tree = select.conditions;
+		Join join = new Join(this, select.conditions);
+		
+		//to join many tables 
+		if (allInMemory(tables))
+			return join.JoinManyTables(tables);
+
 		//handle join
 		if (select.distinct && hash == null)
 			hash = new HashSet<UTuple>();
 		if (select.order_by != null && heap == null)
 			heap = new Heap<UTuple>();
 		
-		ArrayList<ExpressionTree> allnodes = null;
-		if (tree!=null) allnodes = tree.hasSelection();
-		
 		String[] alltables = tables.toArray(new String[tables.size()]);
-		for (String table: alltables) 
+		String pretable = null;
+		String curtable = null;
+		for (int i = 0; i < alltables.length; i++) 
 		{
-			curtable = table;
+			curtable = alltables[i];
+			boolean lasttable = (i==alltables.length-1)?true:false;
 			if (pretable != null) {
-				pretable = Join.JoinTable2(this, pretable, curtable,allnodes);
+				pretable = join.JoinTable(pretable, curtable,lasttable);
 				tables.add(pretable);
 			}else {
 				pretable = curtable;
@@ -245,9 +260,9 @@ public class PhiQuery {
 		}
 		curtable = pretable;
 		ArrayList<UTuple> tuples = tableScan(curtable, select, 0, select.attributes);
-		//ArrayList<UTuple> output = distinctOperation(curtable, tuples, select);
 		return tuples;
 	}
+	
 	//read the relation into memory and then execute statements one by one, try to maximize the reading
 	//action 0 for select, 1 for delete
 	private ArrayList<UTuple> tableScan(String table, TreeNode selecdeletetree, int action, ArrayList<String> attris) {
@@ -298,8 +313,9 @@ public class PhiQuery {
 	    }
 	}
 	//UTuple to tuple
-	private ArrayList<Tuple> toTuples(ArrayList<UTuple> output, ArrayList<String> attributes) {
+	private ArrayList<Tuple> toTuples(ArrayList<String> tables, ArrayList<UTuple> output, ArrayList<String> attributes) {
 		String tablename = "totuples";
+		tables.add(tablename);
 		ArrayList<FieldType> field_types = new ArrayList<FieldType>();
 		ArrayList<Tuple> tuples = new ArrayList<Tuple>();
 		for (int i = 0; i < output.get(0).fields().size(); i++) 
@@ -381,6 +397,39 @@ public class PhiQuery {
 		}
 	}
 	
+	//check if we can pipeline 
+	public boolean isOutput() {
+		if (pipeline && heap == null && hash == null)
+			return false;
+		return true;
+	}
+	
+	//output the fieldnames 
+	public void outputFields(ArrayList<String> attributes, ArrayList<String> tables) {
+		String str = "";
+		if (attributes.size() == 1 && attributes.get(0).equals("*")) {
+			for (int i = 0; i < tables.size(); i++) {
+				Relation relation_reference = schema_manager.getRelation(tables.get(i));
+				for (String field: relation_reference.getSchema().getFieldNames()) {
+					if (tables.size() > 1)
+						str += tables.get(i)+"." + field;
+					else 
+					str += field;
+					str += ", ";
+				}
+			}
+			str = str.substring(0, str.lastIndexOf(','));
+			System.out.println(str);
+			return;
+		}
+		for (int i = 0; i < attributes.size(); i++) {
+			str += attributes.get(i) ;
+			if (i != attributes.size()-1) 
+				str += ", ";
+		}
+		System.out.println(str);
+	}
+	
 	public static void appendTupleToRelation(Relation relation_reference, MainMemory mem, int memory_block_index, Tuple tuple) {
 		Block block_reference;
 	    if (relation_reference.getNumOfBlocks()==0) {
@@ -411,66 +460,40 @@ public class PhiQuery {
 	    }
 	}
 	
-	public static void parseFile(String... files) throws IOException
+	public boolean parseFile(String... files) throws IOException
 	{
 	    if(files.length == 0) Parser2.error("Error files");
 //	    Parser2 parse = new Parser2();
-	    PhiQuery query = new PhiQuery();
+//	    PhiQuery query = new PhiQuery();
 	    //List<String> lines = new ArrayList<String>();
 	    File file = new File(files[0]); //for ex foo.txt
+//	    PrintWriter writer = null;
+	    if (files.length == 2)
+	    	System.setOut(new PrintStream(new File(files[1])));
+	    else if (files.length > 2)
+	     	Parser2.error("To many files!");
 		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 		    String line;
 		    while ((line = br.readLine()) != null) {
-		    	boolean flag = query.execute(line);
+		    	boolean flag = execute(line);
 		    	if (!flag)
 		    		Parser2.error("Error in processing files files");
 		    }
 		}catch(IOException e) {
 			System.out.println(e);
 		}
-		
+		System.setOut(System.out);
 		System.out.println("File Parsing Completed!");
+		return true;
 //		String select = "SELECT * FROM course where course.grade = \"A\"";
 //		query.execute(select);
 	}
 	
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
-//		String create ="CREATE TABLE course (sid INT, homework INT, project INT, exam INT, grade STR20)";
-//		String insert0 = "INSERT INTO course (sid, homework, project, exam, grade) VALUES (1, NULL, 100, 100, \"A\")";
-//		String insert1 = "INSERT INTO course (sid, homework, project, exam, grade) VALUES (3, 100, 100, 98, \"C\")";
-//		String insert2 = "INSERT INTO course (sid, homework, project, exam, grade) VALUES (3, 100, 69, 64, \"C\")";
-//		String insert3 = "INSERT INTO course (sid, homework, project, exam, grade) VALUES (15, 100, 50, 90, \"E\")";
-//		String insert4 = "INSERT INTO course (sid, homework, project, exam, grade) VALUES (15, 100, 99, 100, \"E\")";
-//		String insert5 = "INSERT INTO course (sid, homework, project, exam, grade) VALUES (17, 100, 100, 100, \"A\")";
-//		String insert6 = "INSERT INTO course (sid, homework, project, exam, grade) VALUES (2, 100, 100, 99, \"B\")";
-//		String insert7 = "INSERT INTO course (sid, homework, project, exam, grade) VALUES (4, 100, 100, 97, \"D\")";
-//		String insert8 = "INSERT INTO course (sid, homework, project, exam, grade) VALUES (5, 100, 100, 66, \"A\")";
-//		String insert9 = "INSERT INTO course (sid, homework, project, exam, grade) VALUES (6, 100, 100, 65, \"B\")";
-//		String insert10 = "INSERT INTO course (sid, homework, project, exam, grade) VALUES (7, 100, 50, 73, \"C\")";
-//		String select = "SELECT * FROM course";
-//		String delete = "DELETE FROM course WHERE grade = \"E\"";
-//		//String insert = "INSERT INTO course (sid, homework, project, exam, grade) SELECT * FROM course";
-//		String drop = "DROP TABLE course";
-//		String select2 = "SELECT sid, grade FROM course";
-		String filename = "test2.txt";
-//		PhiQuery query = new PhiQuery();
-		parseFile(filename);
-//		query.execute(create);
-//		query.execute(insert0);
-//		query.execute(insert1);
-//		query.execute(insert2);
-//		query.execute(insert3);
-//		query.execute(insert4);
-//		query.execute(insert5);
-//		query.execute(insert6);
-//		query.execute(insert7);
-//		query.execute(insert8);
-//		query.execute(insert9);
-//		query.execute(insert10);
-//		query.execute(delete);
-//		//query.execute(drop);
-//		query.execute(select2);
+		String filename = "source test3.txt";
+		PhiQuery query = new PhiQuery();
+		query.execute(filename);
 	}
 
 }

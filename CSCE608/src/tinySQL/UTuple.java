@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import storageManager.Field;
 import storageManager.FieldType;
+import storageManager.Schema;
 import storageManager.Tuple;
 
 public class UTuple implements Comparable<UTuple>{
@@ -31,9 +32,17 @@ public class UTuple implements Comparable<UTuple>{
 		return fields;
 	}
 	
-	public String toString() {
-		return fields.toString();
+//	public String toString() {
+//		return fields.toString();
+//	}
+	
+	 public String toString()  {
+	  String str = "";
+	  for (int i=0;i<fields.size();i++)
+	      str+=fields.get(i)+"\t";
+	  return str;
 	}
+	
 	
 	@Override
 	public int compareTo(UTuple key2) {

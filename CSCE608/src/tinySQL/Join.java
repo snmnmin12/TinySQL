@@ -1,41 +1,66 @@
 package tinySQL;
 import java.util.ArrayList;
-import java.util.HashSet;
 
 import storageManager.*;
 
 public class Join {
-	
-	public static ArrayList<Tuple> JoinTable(SchemaManager schema_manager, ArrayList<Tuple> t1,  ArrayList<Tuple> t2, String table2) {
-		
-		ArrayList<Tuple> res = new ArrayList<Tuple>();
-		ArrayList<String> fieldnames = new ArrayList<String>(t1.get(0).getSchema().getFieldNames());
-		HashSet<String> fields = new HashSet<String>(t1.get(0).getSchema().getFieldNames());
-		ArrayList<FieldType> fieldtypes = new ArrayList<FieldType>(t1.get(0).getSchema().getFieldTypes());
-		for (String str:t2.get(0).getSchema().getFieldNames()) {
-			if (fields.contains(str))
-				fieldnames.add(table2+"."+str);
-			else fieldnames.add(str);	
+	private SchemaManager schema_manager;
+	private MainMemory mem;
+	ExpressionTree tree;
+	Join(PhiQuery phi, ExpressionTree tree) {
+		this.schema_manager = phi.schema_manager;
+		this.mem = phi.mem;
+		this.tree = tree;
+	}
+	//let's join as many table as possible
+	public ArrayList<UTuple> JoinManyTables(ArrayList<String> tables) {
+
+		int alreadyinmem = 0;
+		ArrayList<Integer> inmemrecord = new ArrayList<Integer>();
+		//get all fieldnames and all fieldtypes
+		ArrayList<String> fieldnames = new ArrayList<String>();
+		ArrayList<FieldType> fieldtypes = new ArrayList<FieldType>();
+		String relationname = "";
+		for (int i = 0; i < tables.size(); i++) {
+			String table = tables.get(i);
+			Relation rela_reference = schema_manager.getRelation(table);
+			rela_reference.getBlocks(0,alreadyinmem,rela_reference.getNumOfBlocks());
+			alreadyinmem += rela_reference.getNumOfBlocks();
+			inmemrecord.add(alreadyinmem);
+			operation(rela_reference,fieldnames, table);
+			fieldtypes.addAll(rela_reference.getSchema().getFieldTypes());
+			relationname += table;
 		}
-		
-		fieldtypes.addAll(t2.get(0).getSchema().getFieldTypes());
-		
 		Schema schema=new Schema(fieldnames,fieldtypes);
-		String relationname = "temp";
-		Relation relation_reference=schema_manager.createRelation(relationname,schema);
-		for (Tuple ut1:t1) {
-			for (Tuple ut2:t2) {
-				Tuple tuple = relation_reference.createTuple();
-				createTuple(ut1, tuple, 0);
-				createTuple(ut2, tuple, ut1.getNumOfFields());
-				res.add(tuple);
+		Relation relation_reference = schema_manager.createRelation(relationname,schema);
+		Tuple tuple = relation_reference.createTuple();
+		ArrayList<UTuple> tuples = new ArrayList<UTuple>();
+		ProcessingMem(relation_reference,inmemrecord, 0, 0, tuple, 0, tuples);
+		return tuples;
+		//now processing the blocks in memeory
+	}
+	
+	private void ProcessingMem(Relation relation_reference,
+			ArrayList<Integer>records, int start, int k, Tuple tuple, int tstart, ArrayList<UTuple> tuples) {
+		if (k == records.size()) {
+			if (tree == null ||(tree != null && tree.check(tuple.getSchema(), tuple)))
+				tuples.add(new UTuple(tuple.getField(0),tuple));
+			tuple = relation_reference.createTuple();
+			return;
+		}
+		//now start the recursion
+		for (int i = start; i < records.get(k); i++) {
+			Block block_reference = mem.getBlock(i);
+			for (Tuple tup: block_reference.getTuples()) {
+				createTuple(tup, tuple, tstart);
+				ProcessingMem(relation_reference, records, records.get(k), k+1, tuple, 
+						tstart+tup.getNumOfFields(), tuples);
 			}
 		}
-		//schema_manager.deleteRelation(relationname);
-		return res;
 	}
+	
 	//operation to build tuple attributes and fields
-	private static void operation(Relation rela_reference, ArrayList<String> attrs3, String table) {
+	private void operation(Relation rela_reference, ArrayList<String> attrs3, String table) {
 		for (String attr:  rela_reference.getSchema().getFieldNames()) {
 			int index = attr.indexOf(".");
 			if (index == -1)
@@ -45,20 +70,20 @@ public class Join {
 		}
 	}
 	//return intermediate table name after join
-	public static String JoinTable2(PhiQuery phi, String table1, String table2, ArrayList<ExpressionTree> tree) {
+	public String JoinTable(String table1, String table2, boolean lasttable) {
 		
-		SchemaManager schema_manager = phi.schema_manager;
-		MainMemory mem = phi.mem;
+		ArrayList<ExpressionTree> trees = (tree==null)?null:tree.hasSelection();
 		
 		Relation rela_reference1 = schema_manager.getRelation(table1);
 		Relation rela_reference2 = schema_manager.getRelation(table2);
 		//select the right expression tree
-		int index = tree == null?-1:selectExpressionTree(table1, table2, tree);
-		ExpressionTree treenode = index==-1?null:tree.get(index);
+		int index = tree == null?-1:selectExpressionTree(table1, table2, trees);
+		ExpressionTree treenode = index==-1?null:trees.get(index);
 		//we have to create fields
 		ArrayList<String> fieldnames = new ArrayList<String>();
 		operation(rela_reference1,fieldnames, table1);
 		operation(rela_reference2,fieldnames, table2);
+		
 		//create new schemas
 		ArrayList<FieldType> fieldtypes = new ArrayList<FieldType>(rela_reference1.getSchema().getFieldTypes());
 		fieldtypes.addAll(rela_reference2.getSchema().getFieldTypes());
@@ -95,36 +120,36 @@ public class Join {
 			    		Block block_reference1=mem.getBlock(k);
 			    		if (block_reference1.getNumTuples() == 0) continue;
 			    		//operation on blocks for relation 1 and relation 2
-			    		createTuples(block_reference1, block_reference2,relation_reference,mem,treenode);
+			    		createTuples(block_reference1, block_reference2,relation_reference,treenode, lasttable);
 			    	}
 			    	relationnumBlocks1 -= senttomem1;
 			    	alreadyreadblocks += senttomem1;
 		    	}
 			}
 		}
-		//delete unnecessary intermediate relation
-//		if (!Arrays.asList(tables).contains(table1))
-//			schema_manager.deleteRelation(table1);
 		return relationname;
 	}
 	
 	//helper method to collect tuples
-	private static void createTuples(Block block_reference1, Block block_reference2,Relation relation_reference, 
-			MainMemory mem, ExpressionTree tree) {
+	private void createTuples(Block block_reference1, Block block_reference2,Relation relation_reference, ExpressionTree tree, boolean lasttable) {
 
 		for (Tuple tup: block_reference1.getTuples()) {
 			for (Tuple tup2: block_reference2.getTuples()) {
 				Tuple tuple = relation_reference.createTuple();
 				createTuple(tup, tuple, 0);
 				createTuple(tup2, tuple, tup.getNumOfFields());
-				if (tree == null ||(tree != null && tree.check(tuple.getSchema(), tuple)))
-					PhiQuery.appendTupleToRelation(relation_reference, mem, 9, tuple);
+				if (tree == null ||(tree != null && tree.check(tuple.getSchema(), tuple))) {
+//					if (phi.isOutput() && lasttable)
+//						System.out.println(tuple);
+//					else 
+					PhiQuery.appendTupleToRelation(relation_reference, mem, mem.getMemorySize()-1, tuple);
+				}
 //				tuples.add(tuple);
 			}
 		}
 	}
 	//helper methods
-	private static void createTuple(Tuple tu1, Tuple tuple, int i) {
+	private  void createTuple(Tuple tu1, Tuple tuple, int i) {
 		for (int j = 0; j < tu1.getNumOfFields(); j++,i++) {
 			if (tu1.getField(j).type == FieldType.INT)
 				tuple.setField(i, tu1.getField(j).integer);
@@ -134,7 +159,7 @@ public class Join {
 	}
 	
 	//select the right tree
-	private static int selectExpressionTree(String table1, String table2, ArrayList<ExpressionTree> alltrees) {
+	private int selectExpressionTree(String table1, String table2, ArrayList<ExpressionTree> alltrees) {
 		for (int i = 0; i < alltrees.size(); i++) {
 			if (alltrees.get(i).toString().contains(table1) && alltrees.get(i).toString().contains(table2))
 				return i;
