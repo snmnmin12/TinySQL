@@ -4,7 +4,7 @@
 .settings/
 .classpath
 .project
-.CSCE608/
-.bin/
-.test2.txt
-.test3.txt
+CSCE608/
+bin/
+test2.txt
+test3.txt
