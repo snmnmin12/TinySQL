@@ -3,15 +3,19 @@ package tinySQL;
 import storageManager.*;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-
+/*
+ * @author: Mingmin Song
+ */
 public class Parser2{
-	private final String error1 = "Syntax Error!";
+	//private final String error1 = "Syntax Error!";
 	public String sentence;
 	public ArrayList<String> words;
 	public ArrayList<String> fields;
@@ -29,10 +33,12 @@ public class Parser2{
 		delete = null;
 	}
 
-	public boolean SyntaxParse(String str) {
-		if (str.length() == 0)
-			return false;
+	public boolean SyntaxParse(String str) throws ParserException {
+		if (str.length() == 0) 
+			throw new ParserException("Syntax Parser Error!");
 		sentence = str.trim();
+		if (!((str.charAt(str.length()-1) == ')')||(str.charAt(str.length()-1) == '"')||(isAlanum(str, str.length()-1))))
+			throw new ParserException("Sentence should not end with ';'!");
 		reset();
 		int i = 0;
 		if (isLetter(sentence,i)) {
@@ -51,34 +57,38 @@ public class Parser2{
 			else if ("source".equalsIgnoreCase(res.first))
 				return Letters(sentence, res.second);
 			else {
-				error(error1);
-//				return false;
+//				error(error1);
+				throw new ParserException("Syntax Parser Error!");
 			}
 				
 		}else {
-			error(error1);
+			throw new ParserException("Syntax Error!");
+			//error(error1);
 		}
-		return true;
+		//return false;
 	}
 
-	public  boolean CreateCommand(String sentence, int i) {
+	public  boolean CreateCommand(String sentence, int i) throws ParserException {
 		boolean flag = Letters(sentence, i);
+		if (words.size() < 2)
+			throw new ParserException("Create Size is Wrong!");
 		if (flag && !"table".equals(words.get(1).toLowerCase()))
 			flag = false;
 		return flag;
 	}
 	
-	public boolean DropCommand(String sentence, int i) {
+	public boolean DropCommand(String sentence, int i) throws ParserException {
 		boolean flag = Letters(sentence, i);
+		if (words.size() < 2)
+			throw new ParserException("Drop Size is Wrong!");
 		if (flag && !"table".equals(words.get(1).toLowerCase()))
 			flag = false;
 		return true;
 	}
 	
-	public boolean selectCommand(String sentence, int i) {
+	public boolean selectCommand(String sentence, int i) throws ParserException {
 		select = new TreeNode("select");
 		Pair<String, Integer> res;
-		
 		for (; i < sentence.length();) {
 			i = spaceTrim(sentence,i);
 			if (isLetter(sentence, i)) {
@@ -93,7 +103,7 @@ public class Parser2{
 					if (endindex == -1) endindex = sentence.toLowerCase().indexOf("order");
 					if (endindex == -1) endindex = sentence.length();
 					str = sentence.substring(res.second,endindex).trim();
-					str = str.replaceAll("\\s+", "");
+					str = str.replaceAll("\\s+", "").toLowerCase();
 					select.table = str.split(",");
 					i = endindex;
 					continue;
@@ -107,15 +117,18 @@ public class Parser2{
 					select.conditions = ExpressionTree.BuildTree(conditions);
 					if (index != -1) {
 						index = sentence.toLowerCase().indexOf("by");
-						if (index == -1) error("Error in order");
+						if (index == -1) 
+							throw new ParserException("Error in order");
 						String attri = sentence.substring(index+"by".length()).toLowerCase();
-						if ("".equals(attri)) error("Error in order, No Attributes Given");
+						if ("".equals(attri)) 
+							throw new ParserException("Error in order, No Attributes Given");
 						select.order_by = attri.trim();
 					}
 					break;
 				} else if("order".equalsIgnoreCase(res.first)) {
 					int index = sentence.toLowerCase().indexOf("by");
-					if(index == -1) error("Error in order");
+					if(index == -1) 
+						throw new ParserException("Error in order");
 					String order_by = sentence.substring(index+"by".length()).toLowerCase().trim();
 					select.order_by = order_by;
 					break;
@@ -134,7 +147,7 @@ public class Parser2{
 		return true;
 	}
 	
-	public boolean deleteCommand(String sentence, int i) {
+	public boolean deleteCommand(String sentence, int i) throws ParserException {
 		delete = new TreeNode("delete");
 		Pair<String, Integer> res;
 		for (; i < sentence.length();) {
@@ -144,7 +157,7 @@ public class Parser2{
 				if ("from".equalsIgnoreCase(res.first)) {
 					delete.from  = true;
 					res = lettersRetrieve(sentence, res.second);
-					delete.table =new String[]{res.first};
+					delete.table =new String[]{res.first.toLowerCase()};
 				}
 				else if ("where".equalsIgnoreCase(res.first)) {
 					delete.where = true;
@@ -161,8 +174,10 @@ public class Parser2{
 		return true;
 	}
 	
-	public boolean InsertCommand(String sentence, int i) {
+	public boolean InsertCommand(String sentence, int i) throws ParserException {
 		boolean flag = Letters(sentence, i);
+		if (words.size() < 2)
+			throw new ParserException("Insert Size is Wrong!");
 		if (flag && !"into".equals(words.get(1).toLowerCase()))
 			flag = false;
 		return true;
@@ -170,10 +185,10 @@ public class Parser2{
 	
 	// helper method to check letter or display error messages
 
-	public static void error(String message) {
-		System.out.println(message);
-		System.exit(0);
-	}
+//	public static void error(String message) {
+//		System.out.println(message);
+//		//System.exit(0);
+//	}
 
 	//trim all spaces
 	private int spaceTrim(String sentence, int i) {
@@ -183,13 +198,13 @@ public class Parser2{
 	}
 
 	//helper method to retrive all the letters from the string
-	public boolean Letters(String sentence, int i) {
+	public boolean Letters(String sentence, int i) throws ParserException {
 		Pair<String, Integer> res = null;
 		for (; i < sentence.length();) {
 			i = spaceTrim(sentence,i);
 			if (isLetter(sentence, i)) {
 			res = lettersRetrieve(sentence, i);
-			words.add(res.first);
+			words.add(res.first.toLowerCase());
 			if ("select".equalsIgnoreCase(res.first))
 				return selectCommand(sentence, res.second);
 				i = res.second;
@@ -211,13 +226,18 @@ public class Parser2{
 	}
 	
 	//retrive all attributes or values 
-	private int attributeRetrieve(String sentence, int i) {
+	private int attributeRetrieve(String sentence, int i) throws ParserException {
 		//to increate i to bypass(
 		int rightp = sentence.indexOf(')',i);
 		if (rightp == -1) 
-			error("Parenthesis Error!");
+			throw new ParserException("Parenthesis Error!");
 		String sub = sentence.substring(i+1, rightp).trim();
-		String[] subs = sub.split(",");
+//		String regx = "\"\\w+(,).+\"";
+//		Pattern MY_PATTERN = Pattern.compile(regx);
+//		Matcher m = MY_PATTERN.matcher(sub);
+//		if (m.find()) sub = sub.replaceAll(regx, "$1.");
+		ArrayList<String> subs = splitby(sub, ',');
+//		String[] subs = sub.split(",");
 		boolean valueflag = false;
 		if (words.size() > 0 && "values".equalsIgnoreCase(words.get(words.size()-1)))
 			valueflag = true;
@@ -239,7 +259,8 @@ public class Parser2{
 						fieldtypes.add(FieldType.INT);
 					else if (subsub[1].equalsIgnoreCase("str20"))
 						fieldtypes.add(FieldType.STR20);
-					else error("Insertion Wrong!");
+					else 
+						throw new ParserException("Insertion Wrong!");
 				}
 				}
 		}
@@ -269,6 +290,42 @@ public class Parser2{
 	private boolean safeCheck(int i) {
 		return i < sentence.length();
 	}
+	
+	private ArrayList<String> splitby (String str, char ch) 
+	{
+		ArrayList<String> output = new ArrayList<String>();
+		int i = 0;
+		StringBuilder sb = new StringBuilder();
+		for (i = 0; i < str.length();)
+		{
+			if (str.charAt(i) != ch && str.charAt(i) != '"') {
+				while(i < str.length() && str.charAt(i) != ch && str.charAt(i) != '"') 
+					sb.append(str.charAt(i++));
+			}else if (str.charAt(i) == ch) {
+				if (sb.length() != 0)
+				output.add(sb.toString().trim());
+				sb = new StringBuilder();
+				i++;
+			}else if (i < str.length() && str.charAt(i) == '"') {
+				sb.append(str.charAt(i++));
+				while(str.charAt(i) != '"' && i < str.length()) 
+				{
+					if (!Character.isWhitespace(str.charAt(i)))
+						sb.append(str.charAt(i++));
+					else i++;
+				}
+				if (i < str.length() && str.charAt(i) == '"')
+					sb.append(str.charAt(i));
+				output.add(sb.toString().trim());
+				sb = new StringBuilder();
+				i++;
+			}
+		}
+		if (sb.length() != 0)
+			output.add(sb.toString().trim());
+		return output;
+	}
+	
 	public void reset() {
 		words.clear();
 		fields.clear();
@@ -297,9 +354,10 @@ public class Parser2{
 	}
 	
 	@SuppressWarnings("resource")
-	public static void parseFile(String... files) throws IOException
+	public static void parseFile(String... files) throws IOException, ParserException
 	{
-	    if(files.length == 0) error("Error files");
+	    if(files.length == 0) 
+	    	throw new ParserException("Error files");
 	    Parser2 parse = new Parser2();
 	    List<String> lines = new ArrayList<String>();
 	    File file = new File(files[0]); //for ex foo.txt
@@ -325,54 +383,15 @@ public class Parser2{
 		}
 	}
 	
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, ParserException {
 		
 		Parser2 parse = new Parser2();
-//		String filename = "test2.txt";
-//		String filename2 = "output.txt";
-//		String input = "source test.txt";
-		//System.out.println(input.indexOf(" "));
-		//File file = new File(filename);
-//		String sample = "SELECT * FROM course WHERE exam = 100 ORDER BY exam";
-//		System.out.println(sample.toLowerCase());
-//		System.out.println(sample);
-//		sample.m
-//		try {
-//		 parseFile(filename);
-//		}catch(IOException e){
-//			System.out.println(e);
-//		}
-		//parseFile(filename);
-//		String statement = "SELECT * FROM course, course2 WHERE course.sid = course2.sid ORDER BY course.exam";
-//		if (parse.SyntaxParse(statement)) {
-//		System.out.println(parse);
-//		}
-//		String statement = "INSERT INTO course (sid, homework, project, exam, grade) SELECT * FROM course";
-//		if (parse.SyntaxParse(statement)) {
-//			System.out.println(parse);
-//		}
-//		if (parse.SyntaxParse("CREATE TABLE course (sid INT, homework INT, project INT, exam INT, grade STR20)")) {
-//			System.out.println(parse);
-//		}
-//		if (parse.SyntaxParse("INSERT INTO course (sid, homework, project, exam, grade)")) {
-//		System.out.println(parse);
-//		}
-//		if(parse.SyntaxParse("INSERT INTO course (sid, homework, project, exam, grade) VALUES (1, 99, 100, 100, \"A\")"))
-//				System.out.println(parse);
-//		if (parse.SyntaxParse("DELETE FROM course WHERE grade = \"E\"")) {
-//			System.out.println(parse);
-//			}
-//		if (parse.SyntaxParse("SELECT * FROM course WHERE exam = 100 ORDER BY exam")) {
-//		System.out.println(parse);
-//		}
-//		if (parse.SyntaxParse("INSERT INTO course (sid, homework, project, exam, grade) VALUES (1, 99, 100, 100, 'A')")) {
-//			System.out.println(parse);
-//		}
-		if (parse.SyntaxParse("SELECT * FROM course, course2")) {
+		if (parse.SyntaxParse("SELECT * FROM course WHERE grade = \"A\"")) {
 			System.out.println(parse.words);
 			System.out.println(parse.fields);
 			System.out.println(parse.fieldtypes);
 			System.out.println(parse.values);
+			System.out.println(parse.select);
 		}
 	}
 }

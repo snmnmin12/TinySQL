@@ -8,24 +8,8 @@ import storageManager.FieldType;
 import storageManager.Schema;
 import storageManager.Tuple;
 /*
-DELETE FROM course WHERE grade = "E"
-SELECT * FROM course WHERE exam = 100
-SELECT * FROM course WHERE grade = "A"
-SELECT * FROM course WHERE exam = 100 AND project = 100
-SELECT * FROM course WHERE exam = 100 OR exam = 99
-SELECT * FROM course WHERE exam > 70
-SELECT * FROM course WHERE exam = 100 OR homework = 100 AND project = 100
-SELECT * FROM course WHERE (exam + homework) = 200 
-SELECT course.sid, course.grade, course2.grade FROM course, course2 WHERE course.sid = course2.sid
-SELECT DISTINCT course.grade, course2.grade FROM course, course2 WHERE course.sid = course2.sid
-SELECT * FROM course, course2 WHERE course.sid = course2.sid ORDER BY course.exam
-SELECT * FROM course, course2 WHERE course.sid = course2.sid AND course.exam = 100 AND course2.exam = 100
-SELECT * FROM course, course2 WHERE course.sid = course2.sid AND course.exam > course2.exam
-SELECT * FROM course, course2 WHERE course.sid = course2.sid AND course.exam > course2.exam AND course.homework = 100
-SELECT DISTINCT course.grade, course2.grade FROM course, course2 WHERE course.sid = course2.sid AND course.grade = "A" AND course2.grade = "A" ORDER BY course.exam
-SELECT * FROM r, s, t WHERE r.a = t.a AND r.b = s.b AND s.c = t.c
+ * @author: Mingmin Song
  */
-
 public class ExpressionTree {
 	private String op;
 	private ExpressionTree left, right;
@@ -36,8 +20,8 @@ public class ExpressionTree {
 		this.left = left;
 		this.right = right;
 	}
-	
-	public static ExpressionTree BuildTree(String str) {
+
+	public static ExpressionTree BuildTree(String str) throws ParserException {
 		TreeBuild bt = new TreeBuild(str.trim());
 		return bt.treeroot;
 	}
@@ -47,7 +31,7 @@ public class ExpressionTree {
 		public ExpressionTree treeroot;
 		private Stack<String> operator;
 		private Stack<ExpressionTree> operand;
-		public TreeBuild(String str) {
+		public TreeBuild(String str) throws ParserException {
 			operator = new Stack<String>();
 			operand = new Stack<ExpressionTree>();
 			treeroot = BuildT(str);
@@ -83,6 +67,8 @@ public class ExpressionTree {
 				  words.add("&&");
 			  else if (res.first.equalsIgnoreCase("or"))
 				  words.add("||");
+			  else if (res.first.equalsIgnoreCase("not"))
+				  words.add("!");
 			  else
 				  words.add(res.first.trim());
 			  i = res.second;
@@ -90,13 +76,14 @@ public class ExpressionTree {
 		return words;
 	}
 		//construct expression tree according to grammars, including parenthesis, +,-,*,/
-	private ExpressionTree BuildT(String str) {
+	private ExpressionTree BuildT(String str) throws ParserException {
 		ExpressionTree root = new ExpressionTree();
 		ArrayList<String> words = letters(str);
 		for (int i = 0; i < words.size(); i++) 
 		{
 			char ch = words.get(i).charAt(0);
 			switch(ch) {
+				case '!':
 				case '+':
 				case '-':
 				case '*':
@@ -126,7 +113,7 @@ public class ExpressionTree {
 	    //     operandStack.size() == 1
 	    // otherwise, the expression is not well formed.
 	    if ( operand.size()  != 1) {
-	    	Parser2.error("Not well formed tree!");
+	    	throw new ParserException("Not well formed expression tree!");
 	    }
 	    
 	    root  = operand.pop();
@@ -135,20 +122,24 @@ public class ExpressionTree {
 		
 	private int precedence(char op){
 	    switch (op) {
+	    	case '/':
+	    	case '*':
+	    		return 4;
 	        case '+':
 	        case '-':
 	        case '>':
 	        case '<':
-	            return 2;
-	        case '=':
-	        	return 1;
-	        case '/':
-	        case '*':
 	            return 3;
+	        case '=':
+	        	return 2;
+	    	case '!':
+	    		return 1;
+	        case '&':
+	        	return 0;
 	        case '|':
 	        	return -1;
 	        default:
-	            return 0;
+	            return -2;
 	    }
 	}
 		
@@ -170,7 +161,13 @@ public class ExpressionTree {
 		// takes their place on the top of the stack.
 	private void operation(String op) {
 	    ExpressionTree right = operand.pop();
-	    ExpressionTree left = operand.pop();
+	    ExpressionTree left = null;
+	    if (op.equals("!")) {
+	    	ExpressionTree p= new ExpressionTree("!", new ExpressionTree("fasle"), right);
+	    	operand.push(p);
+	    	return;
+	    }
+	    left = operand.pop();
 	    ExpressionTree p= new ExpressionTree(op, left, right);
 	    operand.push(p);
 	}
@@ -210,7 +207,8 @@ public class ExpressionTree {
 	public boolean check(Schema schema, Tuple tuple) {
 		String str = evaluate(schema, tuple);
 		if (str.equals("false")) return false;
-		if (!str.equals("true")) Parser2.error("Syntax Error!");
+//		if (!str.equals("true")) 
+//			throw new ParserException("Syntax Error!");
 		return true;
 	}
 	
@@ -220,8 +218,8 @@ public class ExpressionTree {
 		//check if the attribute has is table.attribute
 		char l = left.op.charAt(0);
 		char r = right.op.charAt(0);
-		boolean leftleaf  = Character.isLetter(l) || Character.isDigit(l); 
-		boolean rightleaf = Character.isLetter(r) || Character.isDigit(r);
+		boolean leftleaf  = Character.isLetter(l) || Character.isDigit(l)||(l =='"'); 
+		boolean rightleaf = Character.isLetter(r) || Character.isDigit(r)||(r =='"');
 		
 		if (leftleaf && rightleaf) {
 			ArrayList<ExpressionTree> tree = new ArrayList<ExpressionTree>();
@@ -312,7 +310,11 @@ public class ExpressionTree {
 			}else if(op.equals("-")) {
 				Integer sum = (Integer.parseInt(lvalue) - Integer.parseInt(rvalue));
 				return sum.toString();
-			}	
+			}else if (op.equals("*")) {
+				return ((Integer)(Integer.parseInt(lvalue)* Integer.parseInt(rvalue))).toString();
+			}else if (op.equals("/")) {
+				return ((Integer)(Integer.parseInt(lvalue)/ Integer.parseInt(rvalue))).toString();
+			}
 		}else if(Character.isLetter(lvalue.charAt(0)) || lvalue.charAt(0) == '"') {
 			if (op.equals("=")) {
 				boolean res = (lvalue.equalsIgnoreCase(rvalue));
@@ -331,13 +333,15 @@ public class ExpressionTree {
 					if (rvalue.equals("true"))
 						return "true";
 					return "false";
+			}else if(op.equals("!")) {
+				return (rvalue).equals("true")?"false":"true";
 			}
 		}
 		return result;
 		
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws ParserException {
 		// TODO Auto-generated method stub
 //		String words = "course.sid = course2.sid AND course.exam > course2.exam";
 		String words2 = "course.sid = course2.sid AND course.exam = 100 AND course2.exam = 100";
@@ -350,7 +354,8 @@ public class ExpressionTree {
 //		BuildT(words3);
 //		BuildT(words4);
 //		BuildT(words5);
-		ExpressionTree otree = BuildTree(words2);
+		String words4 = "NOT exam = 0";
+		ExpressionTree otree = BuildTree(words4);
 		System.out.println(otree);
 		ArrayList<ExpressionTree> ets = otree.hasSelection();
 		for (ExpressionTree tree: ets) 

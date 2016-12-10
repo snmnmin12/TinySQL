@@ -5,15 +5,19 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 
 import storageManager.*;
-
+/*
+ * @author: Mingmin Song
+ */
 public class PhiQuery {
 	
-	private Parser2 parse;
+	public Parser2 parse;
 	public MainMemory mem;
 	public Disk disk;
 	public SchemaManager schema_manager;
@@ -21,9 +25,10 @@ public class PhiQuery {
 	public Heap<UTuple> heap;
 	public boolean pipeline;
 	public PrintStream out;
+	
 	public PhiQuery(){
 		//this is the constructor for execute the physical queries
-		parse = new Parser2();
+		parse = null;
 		mem=new MainMemory();
 		disk=new Disk();
 		hash = null;
@@ -34,17 +39,21 @@ public class PhiQuery {
 	    disk.resetDiskTimer();
 	}
 	
-	public boolean execute(String statement) throws IOException {
-		
+	public boolean execute(String statement) throws IOException, ParserException {
+		parse = new Parser2();
 		parse.SyntaxParse(statement);
 		if (parse.words.size() == 0)
-			Parser2.error("Statements Can't be understood!");
+			throw new ParserException("Statements Can't be understood!");
 		if ("create".equalsIgnoreCase(parse.words.get(0)))
 			return createQuery();
 		else if ("insert".equalsIgnoreCase(parse.words.get(0)))
 			return insertQuery();
 		else if ("select".equalsIgnoreCase(parse.words.get(0))) {
+			long start = System.currentTimeMillis();
 			selectQuery();
+			long end = System.currentTimeMillis();
+			NumberFormat formatter = new DecimalFormat("#0.00");
+			System.out.println("Execution time: "+formatter.format((end - start) / 1000d)+" seconds\n");
 			return true;
 		}
 		else if ("delete".equalsIgnoreCase(parse.words.get(0))) {
@@ -59,19 +68,19 @@ public class PhiQuery {
 		}
 	}
 	
-	public boolean createQuery() {
+	public boolean createQuery() throws ParserException {
 		if (parse.words.size() < 3)
-			Parser2.error("Create Size is Wrong!");
+			throw new ParserException("Create Size is Wrong!");
 		if (!"create".equalsIgnoreCase(parse.words.get(0)))
-			Parser2.error("Create Keyword is Wrong!");
+			throw new ParserException("Create Keyword is Wrong!");
 		if (!"table".equalsIgnoreCase(parse.words.get(1)))
-			Parser2.error("Table Keyword be understood!");
+			throw new ParserException("Table Keyword be understood!");
 		if ("".equals(parse.words.get(2)))
-			Parser2.error("Table name is not given");
+			throw new ParserException("Table name is not given");
 		if (parse.fields.size() == 0)
-			Parser2.error("Fields size is wrong!");
+			throw new ParserException("Fields size is wrong!");
 		if (parse.fields.size() != parse.fieldtypes.size())
-			Parser2.error("field size and fieldtypes does not match");
+			throw new ParserException("field size and fieldtypes does not match");
 		
 		String relation_name = parse.words.get(2).toLowerCase();
 	    ArrayList<String> field_names= parse.fields;
@@ -83,25 +92,25 @@ public class PhiQuery {
 		return true;
 	}
 	
-	public boolean insertQuery() {
+	public boolean insertQuery() throws ParserException {
 		//error checking
 		if (parse.words.size() < 3)
-			Parser2.error("Insert Size is Wrong!");
+			throw new ParserException("Insert Size is Wrong!");
 		if (!"insert".equalsIgnoreCase(parse.words.get(0)))
-			Parser2.error("Insert 'into' Keyword is Wrong!");
+			throw new ParserException("Insert 'into' Keyword is Wrong!");
 		if (!"into".equalsIgnoreCase(parse.words.get(1)))
-			Parser2.error("Table Keyword can not be understood!");
+			throw new ParserException("Table Keyword can not be understood!");
 		if ("".equals(parse.words.get(2)))
-			Parser2.error("Table name is not given");
+			throw new ParserException("Table name is not given");
 		if (parse.fields.size() == 0)
-			Parser2.error("Fields size is wrong!");
+			throw new ParserException("Fields size is wrong!");
 
 		//relations insertion into the relations
 		String relation_name = parse.words.get(2).toLowerCase();
 		Relation relation_reference = schema_manager.getRelation(relation_name);
 		//error checking
 		if (relation_reference == null) 
-			Parser2.error("Relation with this name can't be found");
+			throw new ParserException("Relation with this name can't be found");
 		//create tuples
 		Tuple tuple = relation_reference.createTuple();
 //	    System.out.print("The tuple has schema" + "\n");
@@ -120,33 +129,32 @@ public class PhiQuery {
 		    			tuple.setField(field_names.get(i), 0);
 		    		}
 		    }
-		    appendTupleToRelation(relation_reference, mem, 5, tuple);
+		    RelationHelper.appendTupleToRelation(relation_reference, mem, 5, tuple);
 	    }else {
-	    		if (parse.select ==null)
-	    			Parser2.error("Error in Update for select");
-	    		for(Tuple tu:selectQuery()) {
-	    			tuple = tu;
-	    			appendTupleToRelation(relation_reference, mem, 5, tuple);
-	    		}
+    		if (parse.select ==null)
+    			throw new ParserException("Error in Update for select");
+    		for(Tuple tu:selectQuery()) {
+    			tuple = tu;
+    			RelationHelper.appendTupleToRelation(relation_reference, mem, 5, tuple);
+    		}
 	    }
 		return true;
 	}
 	
-	public ArrayList<Tuple> selectQuery() {
+	public ArrayList<Tuple> selectQuery() throws ParserException {
 		
 		if (parse.words.size() < 1)
-			Parser2.error("Select Size is Wrong!");
+			throw new ParserException("Select Size is Wrong!");
 		if (parse.select == null)
-			Parser2.error("Select Node Can't be NULL!");
+			throw new ParserException("Select Node Can't be NULL!");
 		if (!parse.select.from)
-			Parser2.error("Select Syntax is wrong!");
-		
+			throw new ParserException("Select Syntax is wrong!");
+		if (parse.select.table == null || parse.select.table.length == 0)
+			throw new ParserException("Table size is wrong!");
 		//check if the selected results should be pipelined or materialized
 		hash = null;
 		heap = null;
 		pipeline = "select".equalsIgnoreCase(parse.words.get(0));
-//		if (pipeline)
-//			System.out.println(parse.sentence+" started!");
 		
 		TreeNode select = parse.select;
 		String[] finaltables = select.table;
@@ -157,9 +165,6 @@ public class PhiQuery {
 		ExpressionTree Tree = null;
 		if (select.where) 
 			Tree = select.conditions;
-		
-		if (pipeline) 
-			outputFields(select.attributes,tables);
 			
 		//optimizations, possible, first optimize the join operation
 		ArrayList<String> temptables = Optimization.selectOptimization(finaltables, this, Tree);
@@ -170,47 +175,53 @@ public class PhiQuery {
 		}
 
 		ArrayList<UTuple>  output = excuteJoin(tables, select);
-		if (heap != null)
-		{
-			output = heap.Build();
-		}	
+
+		//removeTempRelations(tables, finaltables);
 		if (pipeline)
 		{
-			for (UTuple res: output)
-				System.out.println(res);
-			//System.out.println("\n");
+			if (output.size() > 0) {
+			System.out.println("----------------------------------------------------");
+			outputFields(select.attributes,finaltables);
+			System.out.println("----------------------------------------------------");
+			for (UTuple res: output) System.out.println(res);
+			System.out.println("----------------------------------------------------");
+			}
+			System.out.println(output.size()+" rows in set!");
 //			System.out.println(parse.sentence+" is over!"+"\n");
 		}
-		else 
+		else {
+			removeTempRelations(tables, finaltables);
 			return toTuples(tables, output, select.attributes);
+		}
+		
 		removeTempRelations(tables, finaltables);
 		return null;
 	}
 	
 	//execute the drop statements
-	public boolean dropQuery() {
-		if (parse.words.size() < 1)
-			Parser2.error("Drop Size is Wrong!");
+	public boolean dropQuery() throws ParserException {
+		if (parse.words.size() < 2)
+			throw new ParserException("Drop Size is Wrong!");
 		if (!"drop".equalsIgnoreCase(parse.words.get(0)))
-			Parser2.error("Drop Syntax is wrong!");
+			throw new ParserException("Drop Syntax is wrong!");
 		if (!"table".equalsIgnoreCase(parse.words.get(1)))
-			Parser2.error("Drop Syntax is wrong!");
+			throw new ParserException("Drop Syntax is wrong!");
 		String table = parse.words.get(2);
 		schema_manager.deleteRelation(table);
 		return true;
 	}
 	
-	public boolean deleteQuery() {
+	public boolean deleteQuery() throws ParserException {
 		//to delete tuples from database with certain conditions
 		if (parse.words.size() < 1)
-			Parser2.error("Select Size is Wrong!");
+			throw new ParserException("Select Size is Wrong!");
 		if (!"delete".equalsIgnoreCase(parse.words.get(0)))
-			Parser2.error("Select Syntax is wrong!");
+			throw new ParserException("Select Syntax is wrong!");
 		if (!parse.delete.from)
-			Parser2.error("Select Syntax is wrong!");
+			throw new ParserException("Select Syntax is wrong!");
 		TreeNode delete = parse.delete;
 		String table = delete.table[0];
-		tableScan(table,delete, 1, null);
+		new SingleTableScan(schema_manager, mem).tableScan(table,delete, 1);
 		
 		return true;
 	}
@@ -218,8 +229,38 @@ public class PhiQuery {
 	
 	//***********************************************************************************************//
 	//below are helper method for execute the above methods
+	//check if the tables are natural join 
+	private boolean isAttri(ArrayList<String> tables, String attri) {
+		for (String table: tables) {
+			Schema schema = schema_manager.getSchema(table);
+			if (schema.fieldNameExists(attri))
+				return true;
+			if (attri.indexOf('.') != -1) {
+				if (schema.fieldNameExists(attri.substring(attri.indexOf('.')+1)))
+					return true;
+			}
+		}
+		return false;
+	}
+	private boolean isNaturalJoin(ArrayList<String> tables, TreeNode select, ArrayList<String> keys) {
+		if (select.conditions == null)
+			return false;
+		ArrayList<ExpressionTree> trees = select.conditions.hasSelection();
+		for (ExpressionTree tree:trees) {
+			if (tree.getOp().equals("=")) {
+				String leftop  =  tree.getLeft().getOp();
+				String rightop =  tree.getRight().getOp();
+				if (isAttri(tables, leftop) && isAttri(tables,rightop)) {
+					keys.add(leftop);
+					keys.add(rightop);
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 	//check if all blocks can be brought to memeory
-	private boolean allInMemory(ArrayList<String> tables)  {
+	private boolean allInMemory(ArrayList<String> tables) {
 		int i = 0;
 		int numblocks = 0;
 		for (; i < tables.size(); i++) {
@@ -232,155 +273,126 @@ public class PhiQuery {
 	}
 	//to execute join of many tables, after that read all tuples from one relations using table scan
 	private ArrayList<UTuple> excuteJoin(ArrayList<String> tables, TreeNode select) {
-		Join join = new Join(this, select.conditions);
 		
-		//to join many tables 
-		if (allInMemory(tables))
-			return join.JoinManyTables(tables);
-
-		//handle join
+		Join join = new Join(this, select.conditions);
+	
 		if (select.distinct && hash == null)
 			hash = new HashSet<UTuple>();
 		if (select.order_by != null && heap == null)
 			heap = new Heap<UTuple>();
-		
-		String[] alltables = tables.toArray(new String[tables.size()]);
-		String pretable = null;
-		String curtable = null;
-		for (int i = 0; i < alltables.length; i++) 
+		//to join many tables 
+		ArrayList<Tuple> jointuples = null;
+		ArrayList<String> keys = new ArrayList<String>();
+		boolean flag = false;
+		if (tables.size() >1) flag = isNaturalJoin(tables, select, keys);
+		if (allInMemory(tables))
+			jointuples = join.JoinManyTables(tables);
+		else if (tables.size() == 2) 
 		{
-			curtable = alltables[i];
-			boolean lasttable = (i==alltables.length-1)?true:false;
-			if (pretable != null) {
-				pretable = join.JoinTable(pretable, curtable,lasttable);
-				tables.add(pretable);
-			}else {
-				pretable = curtable;
-			}
+			if (flag) jointuples = join.NaturalJoin2Tables(tables, keys);
+			else jointuples =  join.CrossJoin2Tables(tables);
+		} else if (tables.size() == 3)
+		{
+			jointuples = join.CrossJoin3Tables(tables);
+		}else {
+			jointuples = join.defaultTableJoin(tables, select);
 		}
-		curtable = pretable;
-		ArrayList<UTuple> tuples = tableScan(curtable, select, 0, select.attributes);
+		ArrayList<UTuple> tuples = new ArrayList<UTuple>() ;
+		tuples = JoinedTableProcessing(tables, jointuples, select, select.attributes);
 		return tuples;
 	}
 	
-	//read the relation into memory and then execute statements one by one, try to maximize the reading
-	//action 0 for select, 1 for delete
-	private ArrayList<UTuple> tableScan(String table, TreeNode selecdeletetree, int action, ArrayList<String> attris) {
-		//System.out.print(relation_reference.getSchema().fieldNamesToString()+"\n");
-		Relation relation_reference = schema_manager.getRelation(table);
-		int memnumBlocks = mem.getMemorySize();
-		ArrayList<UTuple> tuples = new ArrayList<UTuple> ();
-
-		//retrieve blocks in two pass because the memory size is only 10 blocks
-		int relationnumBlocks = relation_reference.getNumOfBlocks();
-		int alreadyreadblocks = 0;
-		while (relationnumBlocks > 0) {
-			int senttomem = memnumBlocks > relationnumBlocks?relationnumBlocks:memnumBlocks;
-			relation_reference.getBlocks(alreadyreadblocks,0,senttomem);
-			if (action == 0)
-				selectTuples(relation_reference, senttomem, selecdeletetree, tuples, attris);
-			else if (action == 1)
-				deleteTuples(relation_reference, senttomem, selecdeletetree, alreadyreadblocks);
-		    relationnumBlocks -= senttomem;
-		    alreadyreadblocks += senttomem;
-		}
-		return tuples;
-	}
-	
-	//execute the select tuples according to conditions in memory
-	private void selectTuples(Relation relation_reference, int senttomem, TreeNode select, ArrayList<UTuple> output, ArrayList<String> attributes)
-	{
+	//to process the tables after join
+	ArrayList<UTuple> JoinedTableProcessing(ArrayList<String>tables, ArrayList<Tuple> jointuples, TreeNode select, ArrayList<String> attributes) {
 		ExpressionTree tree = select.conditions;
-		
+		ArrayList<UTuple> output = new ArrayList<UTuple>();
+		if (jointuples.size() == 0)
+			return output;
 		if ("*".equalsIgnoreCase(attributes.get(0))) {
 			attributes.clear();
-			attributes.addAll(relation_reference.getSchema().getFieldNames());
-		}	
-	    for (int i = 0; i < senttomem; i++) {
-	    	Block block_reference=mem.getBlock(i);
-	    	//this is to handle the holes after deletion
-	    	if (block_reference.getNumTuples() == 0) continue;
-	    	for (Tuple tup: block_reference.getTuples()) {
-	    		if (tree != null && tree.check(relation_reference.getSchema(), tup)) {
-	    				//tuples.add(tup);
-	    			distinctOp(tup, output, select, attributes); 
-	    		}
-	    		else if (tree == null) {
-	    			//tuples.add(tup);
-	    			distinctOp(tup, output, select, attributes);
-	    		}
-	    	}
-	    }
+			attributes.addAll(jointuples.get(0).getSchema().getFieldNames());
+		}
+		ArrayList<Tuple> temp = new ArrayList<Tuple>();
+		for (Tuple tup: jointuples) {
+    		if (tree != null && tree.check(tup.getSchema(), tup)) {
+//    			distinctOp(tup, output, select, attributes); 
+    			temp.add(tup);
+    		}else if (tree == null) {
+//    			distinctOp(tup, output, select, attributes);
+    			temp.add(tup);
+			}
+		}
+		output = distinctOp(tables, temp, select, attributes);
+//		RelationHelper.appendMemToRelation(relation_reference, mem, tuples);
+		return output;
 	}
+	private ArrayList<UTuple> distinctOp(ArrayList<String>tables, ArrayList<Tuple> temp,TreeNode select,  ArrayList<String> attributes) {
+
+		ArrayList<UTuple> output = new ArrayList<UTuple>();
+		Tuple tup = temp.get(0);
+		Schema schema = UTuple.buildSchema(tup, attributes, select.order_by);
+		String relationname = "distinct1";
+		tables.add(relationname);
+		Relation relation_temp =  schema_manager.createRelation(relationname, schema);
+		ArrayList<Tuple> tuples = UTuple.ShrinkTuples(relation_temp, temp);
+		if (hash != null) {
+			RelationHelper.appendMemToRelation(relation_temp, mem, tuples);
+			int index = 0;
+			if (select.order_by != null)
+				index = schema.getFieldOffset(select.order_by);
+			output = new DistinctOperation(schema_manager, mem).distinct(tables, relation_temp, schema.getFieldName(index));
+			output = DistinctOperation.furtherPocessing(output, schema, attributes, select.order_by); 
+		}
+		else {
+			int index = 0;
+			if (select.order_by != null)
+				index = schema.getFieldOffset(select.order_by);
+			output = UTuple.TupletoUT(tuples, schema.getFieldName(index));
+		}
+		if (heap != null) {
+			for (UTuple ut: output){
+				ArrayList<Field> fields = ut.fields();
+				ArrayList<Field> subfields = new ArrayList<Field>();
+				Field key = null;
+				int index = attributes.indexOf(select.order_by);
+				if (index == -1) {
+					subfields.addAll(fields.subList(1, fields.size()));
+					key = subfields.get(0);
+				}else  {
+					subfields.addAll(fields);
+					int i =   schema.getFieldNames().indexOf(select.order_by);
+					key = fields.get(i); 
+				}
+				heap.insert(new UTuple(key, subfields));
+			}
+			output = heap.Build();
+		}
+		return output;
+	}
+	
 	//UTuple to tuple
 	private ArrayList<Tuple> toTuples(ArrayList<String> tables, ArrayList<UTuple> output, ArrayList<String> attributes) {
 		String tablename = "totuples";
-		tables.add(tablename);
+		if (pipeline)
+			tables.add(tablename);
+		else 
+			tablename = parse.words.get(2).toLowerCase();
 		ArrayList<FieldType> field_types = new ArrayList<FieldType>();
-		ArrayList<Tuple> tuples = new ArrayList<Tuple>();
+		
 		for (int i = 0; i < output.get(0).fields().size(); i++) 
 			field_types.add(output.get(0).fields().get(i).type);
 		Schema schema=new Schema(attributes,field_types);
-		Relation relation_reference = schema_manager.createRelation(tablename, schema);
 		
-		for (UTuple ut : output) {
-			Tuple tuple = relation_reference.createTuple();
-			for (int i = 0; i < ut.fields().size(); i++) {
-				if (ut.fields().get(i).type == FieldType.INT)
-					tuple.setField(i, ut.fields().get(i).integer);
-				else 
-					tuple.setField(i, ut.fields().get(i).str);
-			}
-			tuples.add(tuple);
-		}
-		//schema_manager.deleteRelation(tablename);
+		Relation relation_reference = null;
+		if (pipeline)
+			relation_reference = schema_manager.createRelation(tablename, schema);
+		else 
+			relation_reference = schema_manager.getRelation(tablename);
+		
+		ArrayList<Tuple> tuples = UTuple.UtoTuples(relation_reference, output);
 		return tuples;
 	}
-	//delete blocks of relation in memory and then write it back to disk
-	private void deleteTuples(Relation relation_reference, int senttomem, TreeNode delete, int alreadyreadblocks) {
-		ExpressionTree tree =delete.conditions;
-	    for (int i = 0; i < senttomem; i++) {
-	    	Block block_reference=mem.getBlock(i);
-	    	//this is to handle the holes after deletion
-	    	if (block_reference.getNumTuples() == 0)
-	    		continue;
-	    	ArrayList<Tuple> tuples = block_reference.getTuples();
-	    	for (int j = 0; j < tuples.size(); j++) {
-	    		if (tree != null)
-	    		{ 
-	    			if (tree.check(relation_reference.getSchema(), tuples.get(j)))
-	    			block_reference.invalidateTuple(j);
-	    		}
-	    		else 
-	    			block_reference.invalidateTuples();
-	    	}
-	    }
-	    relation_reference.setBlocks(alreadyreadblocks, 0, senttomem);
-	}
 		
-	private void distinctOp(Tuple tup, ArrayList<UTuple> output, TreeNode select, ArrayList<String> attributes) {
-		
-		//output the retrieved the results
-		ArrayList<Field> res = new ArrayList<Field>(); 
-		Schema schema = tup.getSchema();
-		for (String field: attributes) {
-			//handle cases like table.attribute
-			if (schema.fieldNameExists(field))
-				res.add(tup.getField(field));
-			else 
-				res.add(tup.getField(field.substring(field.indexOf('.')+1)));
-		}
-		//handle the distinct
-		if ((hash == null) ||(hash!=null && hash.add(new UTuple(res)))) {
-			output.add(new UTuple(res));
-			//handle order_by
-			if (heap != null) {
-				Field f = tup.getField(select.order_by);
-				heap.insert(new UTuple(f, res));
-			}
-		}
-	}
-	
 	//to remove intermediate relations in disk
 	private void removeTempRelations(ArrayList<String> tables, String[] finaltables) {
 		for (String table:tables)
@@ -405,14 +417,14 @@ public class PhiQuery {
 	}
 	
 	//output the fieldnames 
-	public void outputFields(ArrayList<String> attributes, ArrayList<String> tables) {
+	public void outputFields(ArrayList<String> attributes, String[] tables) {
 		String str = "";
 		if (attributes.size() == 1 && attributes.get(0).equals("*")) {
-			for (int i = 0; i < tables.size(); i++) {
-				Relation relation_reference = schema_manager.getRelation(tables.get(i));
+			for (int i = 0; i < tables.length; i++) {
+				Relation relation_reference = schema_manager.getRelation(tables[i]);
 				for (String field: relation_reference.getSchema().getFieldNames()) {
-					if (tables.size() > 1)
-						str += tables.get(i)+"." + field;
+					if (tables.length > 1)
+						str += tables[i]+"." + field;
 					else 
 					str += field;
 					str += ", ";
@@ -430,54 +442,23 @@ public class PhiQuery {
 		System.out.println(str);
 	}
 	
-	public static void appendTupleToRelation(Relation relation_reference, MainMemory mem, int memory_block_index, Tuple tuple) {
-		Block block_reference;
-	    if (relation_reference.getNumOfBlocks()==0) {
-//		      System.out.print("The relation is empty" + "\n");
-//		      System.out.print("Get the handle to the memory block " + memory_block_index + " and clear it" + "\n");
-	      block_reference=mem.getBlock(memory_block_index);
-	      block_reference.clear(); //clear the block
-	      block_reference.appendTuple(tuple); // append the tuple
-//		      System.out.print("Write to the first block of the relation" + "\n");
-	      relation_reference.setBlock(relation_reference.getNumOfBlocks(),memory_block_index);
-	    } else {
-//		      System.out.print("Read the last block of the relation into memory block "+memory_block_index+" :" + "\n");
-	      relation_reference.getBlock(relation_reference.getNumOfBlocks()-1,memory_block_index);
-	      block_reference=mem.getBlock(memory_block_index);
-
-	      if (block_reference.isFull()) {
-//		        System.out.print("(The block is full: Clear the memory block and append the tuple)" + "\n");
-	        block_reference.clear(); //clear the block
-	        block_reference.appendTuple(tuple); // append the tuple
-//		        System.out.print("Write to a new block at the end of the relation" + "\n");
-	        relation_reference.setBlock(relation_reference.getNumOfBlocks(),memory_block_index); //write back to the relation
-	      } else {
-//		        System.out.print("(The block is not full: Append it directly)" + "\n");
-	        block_reference.appendTuple(tuple); // append the tuple
-//		        System.out.print("Write to the last block of the relation" + "\n");
-	        relation_reference.setBlock(relation_reference.getNumOfBlocks()-1,memory_block_index); //write back to the relation
-	      }
-	    }
-	}
 	
-	public boolean parseFile(String... files) throws IOException
+	public boolean parseFile(String... files) throws IOException, ParserException
 	{
-	    if(files.length == 0) Parser2.error("Error files");
-//	    Parser2 parse = new Parser2();
-//	    PhiQuery query = new PhiQuery();
-	    //List<String> lines = new ArrayList<String>();
+	    if(files.length == 0) 
+	    	throw new ParserException("Error files");
 	    File file = new File(files[0]); //for ex foo.txt
 //	    PrintWriter writer = null;
 	    if (files.length == 2)
 	    	System.setOut(new PrintStream(new File(files[1])));
 	    else if (files.length > 2)
-	     	Parser2.error("To many files!");
+	    	throw new ParserException("To many files!");
 		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 		    String line;
 		    while ((line = br.readLine()) != null) {
 		    	boolean flag = execute(line);
 		    	if (!flag)
-		    		Parser2.error("Error in processing files files");
+		    		throw new ParserException("Error in processing files files");
 		    }
 		}catch(IOException e) {
 			System.out.println(e);
@@ -489,11 +470,23 @@ public class PhiQuery {
 //		query.execute(select);
 	}
 	
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, ParserException {
 		// TODO Auto-generated method stub
-		String filename = "source test3.txt";
+		String filename = "source usertest.txt";
+
+//		final long startTime = System.currentTimeMillis();
 		PhiQuery query = new PhiQuery();
+//		String create = "CREATE TABLE carMaker (id INT, name STR20, country STR20, manufactuer STR20,address STR20)";
+//		String insertion = "INSERT INTO carMaker (id, name, country, manufactuer,address) VALUES (200000001,\"Audi\",\"Germany\",\"Volkswagen Group\",\"Ingolstadt Germany\")";
+//		String select = "select * from carMaker";
+//		query.execute(create);
+//		query.execute(insertion);
+//		query.execute(select);
 		query.execute(filename);
+//	    System.out.print("Calculated elapse time = " + query.disk.getDiskTimer() + " ms" + "\n");
+//	    System.out.print("Calculated Disk I/Os = " + query.disk.getDiskIOs() + "\n");
+//		final long endTime = System.currentTimeMillis();
+//		System.out.println("Total execution time: " + (endTime - startTime) );
 	}
 
 }

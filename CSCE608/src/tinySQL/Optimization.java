@@ -3,7 +3,9 @@ package tinySQL;
 import java.util.ArrayList;
 
 import storageManager.*;
-
+/*
+ * @author: Mingmin Song
+ */
 public class Optimization {
 	
 	public static void joinOptimization(ArrayList<String> tables, SchemaManager schem_manager) {
@@ -58,7 +60,7 @@ public class Optimization {
 		    	for (Tuple tup: block_reference.getTuples()) {
 		    		Tuple tuple = createNewTuple(relation_reference, tup);
 		    		if (tree == null || (tree != null && tree.check(relation_reference.getSchema(), tuple)))
-		    			PhiQuery.appendTupleToRelation(relation_reference, mem, memnumBlocks, tuple);
+		    			RelationHelper.appendTupleToRelation(relation_reference, mem, memnumBlocks, tuple);
 		    	}
 		    }
 		    relationnumBlocks -= senttomem;
@@ -78,10 +80,6 @@ public class Optimization {
 				newtuple.setField(i, f.str);
 		}
 		return newtuple;
-	}
-	public static void ProjectOptimization()
-	{
-		
 	}
 
 }

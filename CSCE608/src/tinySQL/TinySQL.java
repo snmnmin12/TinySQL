@@ -11,22 +11,33 @@ public class TinySQL {
     protected static void welcome() {
         out.println();
         out.println("This is for CSCE project CS608!");
-        out.println("http://faculty.cs.tamu.edu/chen/");
         out.println("Please Enter the TinySQL command:");
         out.println();
         return;
     }
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ParserException {
+    	
         try {
+        	PhiQuery query = new PhiQuery();
+        	if (args.length > 0) {
+        		query.parseFile(args);
+        		return;
+        	}
         	welcome();
             ConsoleReader console = new ConsoleReader();
             console.addCompleter(new FileNameCompleter());
             console.setPrompt("prompt> ");
             String line = null;
-            PhiQuery query = new PhiQuery();
-            while ((line = console.readLine()) != null) {
-            	 //console.println(line);
+            while ((line=console.readLine()) != null) {
+            	try {
                 query.execute(line);
+                }catch(ParserException e) {
+                	System.out.println(e);
+                }catch (IOException e) {
+                	System.out.println(e);
+                }catch (Exception e) {
+                	System.out.println("Syntax Error!");
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();

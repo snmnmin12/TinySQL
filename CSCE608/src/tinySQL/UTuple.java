@@ -5,12 +5,16 @@ import java.util.ArrayList;
 
 import storageManager.Field;
 import storageManager.FieldType;
+import storageManager.Relation;
 import storageManager.Schema;
 import storageManager.Tuple;
 
 public class UTuple implements Comparable<UTuple>{
 	private final  Field key;
 	private final ArrayList<Field> fields;
+	public int blockindex = 0;
+	public int tupleindex = 0;
+	
 //	public UTuple() {}
 	public UTuple(Field key, Tuple tuple) {
 		this.key = key;
@@ -18,6 +22,16 @@ public class UTuple implements Comparable<UTuple>{
 		for (int i = 0; i < tuple.getNumOfFields(); i++) 
 		fields.add(tuple.getField(i));
 	}	
+	
+	public UTuple(Field key, Tuple tuple, int blockindex, int tupleindex) {
+		this.key = key;
+		this.fields = new ArrayList<Field>();
+		for (int i = 0; i < tuple.getNumOfFields(); i++) 
+		fields.add(tuple.getField(i));
+		this.blockindex = blockindex;
+		this.tupleindex = tupleindex;
+	}	
+	
 	public UTuple(ArrayList<Field> fields) {
 		this.fields = fields;
 		this.key = new Field();
@@ -27,14 +41,21 @@ public class UTuple implements Comparable<UTuple>{
 		this.fields = fields;
 		this.key = key;
 	}
-
+	
+	public UTuple JoinUTuple(UTuple ut2) {
+		ArrayList<Field> newfields = new ArrayList<Field>();
+		newfields.addAll(fields);
+		newfields.addAll(ut2.fields);
+		return new UTuple(key, newfields);
+	}
+	
 	public ArrayList<Field> fields() {
 		return fields;
 	}
 	
-//	public String toString() {
-//		return fields.toString();
-//	}
+	 public Field key()  {
+		 return key;
+	 }
 	
 	 public String toString()  {
 	  String str = "";
@@ -42,7 +63,6 @@ public class UTuple implements Comparable<UTuple>{
 	      str+=fields.get(i)+"\t";
 	  return str;
 	}
-	
 	
 	@Override
 	public int compareTo(UTuple key2) {
@@ -66,5 +86,69 @@ public class UTuple implements Comparable<UTuple>{
 		for (Field f:fields)
 			str += f;
 		return str.hashCode();
+	}
+	
+	public static ArrayList<Tuple> UtoTuples(Relation relation_reference, ArrayList<UTuple>input) {
+		ArrayList<Tuple> tuples = new ArrayList<Tuple>();
+		for (UTuple ut : input) {
+			Tuple tuple = relation_reference.createTuple();
+			for (int i = 0; i < ut.fields().size(); i++) {
+				if (ut.fields().get(i).type == FieldType.INT)
+					tuple.setField(i, ut.fields().get(i).integer);
+				else 
+					tuple.setField(i, ut.fields().get(i).str);
+			}
+			tuples.add(tuple);
+		}
+		return tuples;
+	}
+	public static Schema buildSchema(Tuple tup, ArrayList<String> attributes, String select_order_by) 
+	{
+		ArrayList<FieldType> types =  new ArrayList<FieldType>();
+		Schema schema = tup.getSchema();
+		ArrayList<String> temp = new ArrayList<String>();
+		if (select_order_by != null && attributes.indexOf(select_order_by) == -1) temp.add(select_order_by);
+		temp.addAll(attributes);
+		for (String field: temp) {
+			if (schema.fieldNameExists(field)) {
+				types.add(tup.getField(field).type);
+			}
+			else {
+				field =field.substring(field.indexOf('.')+1);
+				types.add(tup.getField(field).type);
+			}
+		}
+		schema = new Schema(temp, types);
+		return schema;
+	}
+	
+	public static ArrayList<Tuple> ShrinkTuples(Relation relationname, ArrayList<Tuple> tuples) 
+	{
+		ArrayList<Tuple> output = new ArrayList<Tuple>();
+		for (Tuple tup: tuples) {
+			Tuple tuple = relationname.createTuple();
+			for (String field:tuple.getSchema().getFieldNames()) {
+				Field f = null;
+				if (!tup.getSchema().fieldNameExists(field))
+						f = tup.getField(field.substring(field.indexOf('.')+1));
+				else f = tup.getField(field);
+				if (f.type == FieldType.INT)
+					tuple.setField(field, f.integer);
+				else 
+					tuple.setField(field, f.str);
+			}
+			output.add(tuple);
+		}
+		return output;
+	}
+
+	public static ArrayList<UTuple> TupletoUT(ArrayList<Tuple> tuples, String fieldname) 
+	{
+		ArrayList<UTuple> output = new ArrayList<UTuple>();
+		for (Tuple tup: tuples) {
+			Field key = tup.getField(fieldname);
+			output.add(new UTuple(key,tup));
+		}
+		return output;
 	}
 }

@@ -55,7 +55,13 @@ public class Heap<T extends Comparable<T>> {
     	siftdown(1, size);
     	return small;
 	}
-	
+	public T peek() {
+		if (isEmpty()) {
+			throw new IllegalStateException();
+		}
+		T small = array[1];
+    	return small;
+	}
     public String toString() {
         return Arrays.toString(Arrays.copyOfRange(array, 1, size));
     }

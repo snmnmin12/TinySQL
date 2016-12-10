@@ -1,9 +1,6 @@
 package tinySQL;
-
-import java.util.*;
 import java.util.ArrayList;
 import storageManager.*;
-
 public class Testing {
 
   // An example procedure of appending a tuple to the end of a relation
