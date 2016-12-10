@@ -4,5 +4,5 @@
 .settings/
 .classpath
 .project
-.CSCE608
-.bin
+.CSCE608/
+.bin/
